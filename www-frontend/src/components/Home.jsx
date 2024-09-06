@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -28,7 +29,7 @@ const Home = () => {
         <Grid container spacing={4}>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardActionArea>
+              <CardActionArea component={Link} to="/bars">
                 <CardMedia
                   component="img"
                   alt="Bars"
@@ -45,7 +46,7 @@ const Home = () => {
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardActionArea>
+              <CardActionArea component={Link} to="/map">
                 <CardMedia
                   component="img"
                   alt="Map"
@@ -62,7 +63,7 @@ const Home = () => {
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardActionArea>
+              <CardActionArea component={Link} to="/events">
                 <CardMedia
                   component="img"
                   alt="Events"
@@ -79,7 +80,7 @@ const Home = () => {
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardActionArea>
+              <CardActionArea component={Link} to="/beers">
                 <CardMedia
                   component="img"
                   alt="Beers"
