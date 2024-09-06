@@ -1,51 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Typography, List, ListItem, ListItemText } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
+import ListItemText from '@mui/material/ListItemText';
+import Container from '@mui/material/Container';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 const ListBeers = () => {
   const [beers, setBeers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchBeers = async () => {
       try {
         const response = await axios.get('/api/v1/beers');
-        setBeers(response.data.beers);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching beers');
-        setLoading(false);
+        setBeers(response.data.beers || []);
+      } catch (error) {
+        console.error('Error fetching beers:', error);
       }
     };
 
     fetchBeers();
   }, []);
 
-  if (loading) return <Typography>Loading...</Typography>;
-  if (error) return <Typography color="error">{error}</Typography>;
+  const filteredBeers = beers.filter(beer =>
+    beer.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Container>
-      <Typography variant="h4" gutterBottom>
-        Beers List
-      </Typography>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6">
+            Beers
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <TextField
+        label="Enter name"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <List>
-        {beers.map((beer) => (
+        {filteredBeers.map((beer) => (
           <ListItem key={beer.id}>
+            <ListItemAvatar>
+              <Avatar src={beer.image} alt={beer.name} />
+            </ListItemAvatar>
             <ListItemText
               primary={beer.name}
-              secondary={
-                <>
-                  <Typography variant="body2">Style: {beer.style}</Typography>
-                  <Typography variant="body2">Hop: {beer.hop}</Typography>
-                  <Typography variant="body2">Yeast: {beer.yeast}</Typography>
-                  <Typography variant="body2">Malts: {beer.malts}</Typography>
-                  <Typography variant="body2">IBU: {beer.ibu}</Typography>
-                  <Typography variant="body2">Alcohol: {beer.alcohol}</Typography>
-                  <Typography variant="body2">BLG: {beer.blg}</Typography>
-                </>
-              }
+              secondary={beer.type}
             />
           </ListItem>
         ))}
