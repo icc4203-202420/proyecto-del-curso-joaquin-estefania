@@ -34,7 +34,7 @@ const Home = () => {
                   component="img"
                   alt="Bars"
                   height="140"
-                  image="/images/bar.avif"
+                  src="/images/bar.avif"
                 />
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div">
@@ -51,7 +51,7 @@ const Home = () => {
                   component="img"
                   alt="Map"
                   height="140"
-                  image="/images/map.png"
+                  src="/images/map.png"
                 />
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div">
@@ -68,7 +68,7 @@ const Home = () => {
                   component="img"
                   alt="Events"
                   height="140"
-                  image="/images/event.jpg"
+                  src="/images/event.jpg"
                 />
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div">
@@ -85,11 +85,29 @@ const Home = () => {
                   component="img"
                   alt="Beers"
                   height="140"
-                  image="/images/beer.webp"
+                  src="/images/beer.webp"
                 />
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div">
                     Beers
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+          {/* Nueva tarjeta para la búsqueda de usuarios */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardActionArea component={Link} to="/search">
+                <CardMedia
+                  component="img"
+                  alt="Search User"
+                  height="140"
+                  src="/images/search-user.jpg"
+                />
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="div">
+                    Buscar Usuario
                   </Typography>
                 </CardContent>
               </CardActionArea>

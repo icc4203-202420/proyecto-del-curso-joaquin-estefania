@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';  // Importa Link de react-router-dom
 import TextField from '@mui/material/TextField';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -59,6 +60,8 @@ const BarList = () => {
               primary={bar.name}
               secondary={bar.phone}
             />
+            {/* Agregamos el Link para ver los eventos del bar */}
+            <Link to={`/bars/${bar.id}/events`}>Ver eventos</Link> {/* Aquí está el enlace */}
           </ListItem>
         ))}
       </List>

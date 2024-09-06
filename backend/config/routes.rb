@@ -21,12 +21,16 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
-      resources :bars
+      resources :bars do
+        resources :events, only: [:index]  # Añadir eventos anidados a bares
+      end
+      
+      resources :events, only: [:show, :create, :update, :destroy]  # Rutas para otras acciones de eventos (no anidadas)
       resources :beers
       resources :users do
         resources :reviews, only: [:index]
       end
-      
+  
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
     end
   end
