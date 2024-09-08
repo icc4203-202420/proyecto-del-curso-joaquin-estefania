@@ -4,11 +4,11 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
 import useAxios from 'axios-hooks';
-import * as jwt_decode from 'jwt-decode';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { jwtDecode } from "jwt-decode";
+import { useNavigate} from 'react-router-dom';
 
 const LoginForm = ({ onLoginSuccess }) => {
-  const navigate = useNavigate(); // Define useNavigate
+  const navigate = useNavigate();
 
   const [, executePost] = useAxios(
     {
@@ -33,14 +33,13 @@ const LoginForm = ({ onLoginSuccess }) => {
           },
         },
       });
-  
-      // Verifica la estructura de la respuesta
+
       if (response.data && response.data.status && response.data.status.code === 200) {
-        const token = response.data.token; // Asegúrate de que el token esté en la respuesta
+        const token = response.data.status.data.token; // Accede al token desde data
         if (token) {
           localStorage.setItem('token', token);
           
-          const decodedToken = jwt_decode(token);
+          const decodedToken = jwtDecode(token);
           onLoginSuccess(decodedToken);
   
           alert('Logged in successfully!');
@@ -52,6 +51,7 @@ const LoginForm = ({ onLoginSuccess }) => {
         throw new Error('Unexpected response structure');
       }
     } catch (error) {
+      console.error('Response error:', error); // Imprime el error en la consola
       alert('Failed to log in: ' + (error.response?.data?.message || error.message));
     } finally {
       setSubmitting(false);
