@@ -10,10 +10,12 @@ import Container from '@mui/material/Container';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { useNavigate } from 'react-router-dom';
 
 const ListBeers = () => {
   const [beers, setBeers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBeers = async () => {
@@ -31,6 +33,10 @@ const ListBeers = () => {
   const filteredBeers = beers.filter(beer =>
     beer.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleBeerClick = (beerId) => {
+    navigate(`/beers/${beerId}`);
+  };
 
   return (
     <Container>
@@ -51,7 +57,7 @@ const ListBeers = () => {
       />
       <List>
         {filteredBeers.map((beer) => (
-          <ListItem key={beer.id}>
+          <ListItem key={beer.id} button onClick={() => handleBeerClick(beer.id)}>
             <ListItemAvatar>
               <Avatar src={beer.image} alt={beer.name} />
             </ListItemAvatar>

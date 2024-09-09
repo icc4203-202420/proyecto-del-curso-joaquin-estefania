@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { jwtDecode } from "jwt-decode";
 import Home from './components/Home';
 import BeerList from './components/BeerList';
+import BeerDetails from './components/BeerDetails'; // Importa el nuevo componente
 import BarList from './components/BarList';
 import Events from './components/Events';
 import SearchUser from './components/SearchUser';
@@ -53,6 +54,10 @@ function App() {
         <Route
           path="/beers"
           element={user ? <BeerList /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/beers/:id"
+          element={user ? <BeerDetails /> : <Navigate to="/login" />}
         />
         <Route
           path="/bars"
