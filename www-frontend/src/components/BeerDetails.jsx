@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Importa useNavigate junto con useParams
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -9,11 +9,17 @@ import CardMedia from '@mui/material/CardMedia';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import { Button } from '@mui/material';
 
 const BeerDetails = () => {
   const { id } = useParams();
   const [beer, setBeer] = useState(null);
   const [bars, setBars] = useState([]);
+  const navigate = useNavigate(); 
+
+  const handleRateBeer = () => {
+    navigate(`/beers/${beer.id}/rate`);
+  };
 
   useEffect(() => {
     const fetchBeerDetails = async () => {
@@ -53,6 +59,9 @@ const BeerDetails = () => {
           <Typography variant="body1">Avg Rating: {beer.avg_rating}</Typography>
         </CardContent>
       </Card>
+      <Button variant="contained" color="primary" onClick={handleRateBeer} sx={{ mt: 2 }}>
+        Rate this Beer
+      </Button>
       <Typography variant="h6" sx={{ mt: 2 }}>Available at Bars:</Typography>
       <List>
         {bars.map((bar) => (

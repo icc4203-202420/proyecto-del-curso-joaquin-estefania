@@ -3,12 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { jwtDecode } from "jwt-decode";
 import Home from './components/Home';
 import BeerList from './components/BeerList';
-import BeerDetails from './components/BeerDetails'; // Importa el nuevo componente
+import BeerDetails from './components/BeerDetails'; 
 import BarList from './components/BarList';
 import Events from './components/Events';
 import SearchUser from './components/SearchUser';
 import RegistrationForm from './components/SignUp';
 import LoginForm from './components/Login';
+import RateSubmit from './components/RateSubmit';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -66,6 +67,10 @@ function App() {
         <Route
           path="/bars/:id/events"
           element={user ? <Events /> : <Navigate to="/login" />}
+        />
+        <Route 
+        path="/beers/:id/rate" 
+        element={user ? <RateSubmit /> : <Navigate to="/login" />}
         />
         <Route
           path="/search"
