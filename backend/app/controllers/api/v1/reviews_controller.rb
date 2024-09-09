@@ -1,14 +1,14 @@
 class API::V1::ReviewsController < ApplicationController
-  respond_to :json
-  before_action :set_user, only: [:index, :create]
-  before_action :set_review, only: [:show, :update, :destroy]
+  before_action :set_beer, only: [:create]
+  before_action :authenticate_user!  # Asegúrate de que el usuario esté autenticado
 
   def index
-    @reviews = Review.where(user: @user)
+    @reviews = Review.where(user: current_user)
     render json: { reviews: @reviews }, status: :ok
   end
 
   def show
+    @review = Review.find_by(id: params[:id])
     if @review
       render json: { review: @review }, status: :ok
     else
@@ -17,7 +17,9 @@ class API::V1::ReviewsController < ApplicationController
   end
 
   def create
-    @review = @user.reviews.build(review_params)
+    @review = @beer.reviews.build(review_params)
+    @review.user = current_user  # Asociar la review al usuario actual
+
     if @review.save
       render json: @review, status: :created, location: api_v1_review_url(@review)
     else
@@ -26,6 +28,7 @@ class API::V1::ReviewsController < ApplicationController
   end
 
   def update
+    @review = Review.find_by(id: params[:id])
     if @review.update(review_params)
       render json: @review, status: :ok
     else
@@ -34,22 +37,24 @@ class API::V1::ReviewsController < ApplicationController
   end
 
   def destroy
-    @review.destroy
-    head :no_content
+    @review = Review.find_by(id: params[:id])
+    if @review
+      @review.destroy
+      head :no_content
+    else
+      render json: { error: "Review not found" }, status: :not_found
+    end
   end
 
   private
 
-  def set_review
-    @review = Review.find_by(id: params[:id])
-    render json: { error: "Review not found" }, status: :not_found unless @review
-  end
-
-  def set_user
-    @user = User.find(params[:user_id]) 
+  def set_beer
+    @beer = Beer.find(params[:beer_id])  # Encontrar la cerveza a la que se está añadiendo la review
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Beer not found' }, status: :not_found
   end
 
   def review_params
-    params.require(:review).permit(:id, :text, :rating, :beer_id)
+    params.require(:review).permit(:text, :rating)
   end
 end

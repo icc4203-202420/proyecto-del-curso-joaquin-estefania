@@ -5,6 +5,10 @@ class Review < ApplicationRecord
   after_save :update_beer_rating
   after_destroy :update_beer_rating
 
+  validates :user, presence: true
+  validates :beer, presence: true
+  validates :text, presence: true
+  validates :rating, presence: true
   private
 
   def update_beer_rating

@@ -30,7 +30,9 @@ Rails.application.routes.draw do
       resources :users do
         resources :reviews, only: [:index]
       end
-
+      resources :beers do
+        resources :reviews, only: [:create]  # Añadir esta línea
+      end
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
     end
   end
