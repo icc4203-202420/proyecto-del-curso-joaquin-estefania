@@ -13,14 +13,12 @@ function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Verifica si hay un token en localStorage al iniciar el componente
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
         setUser(decodedToken);
       } catch (error) {
-        // Si el token no es válido, elimina el token y reinicia el estado
         localStorage.removeItem('token');
         setUser(null);
       }
@@ -28,13 +26,13 @@ function App() {
   }, []);
 
   const handleLoginSuccess = (user) => {
-    setUser(user); // Guarda la información del usuario en el estado
-    localStorage.setItem('token', user.token); // Guarda el token en localStorage
+    setUser(user);
+    localStorage.setItem('token', user.token);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Elimina el token del localStorage
-    setUser(null); // Limpia el estado del usuario
+    localStorage.removeItem('token');
+    setUser(null);
   };
 
   return (

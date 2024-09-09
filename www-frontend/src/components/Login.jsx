@@ -2,12 +2,10 @@ import React from 'react';
 import { TextField, Button, Box, Grid, Typography } from '@mui/material';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
 import useAxios from 'axios-hooks';
-import { jwtDecode } from "jwt-decode";
-import { useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-const LoginForm = () => {
+const LoginForm = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
 
   const [, executePost] = useAxios(
@@ -35,11 +33,10 @@ const LoginForm = () => {
       });
 
       if (response.data && response.data.status && response.data.status.code === 200) {
-        const token = response.data.status.data.token; // Accede al token desde data
+        const token = response.data.status.data.token;
         if (token) {
           localStorage.setItem('token', token);
-  
-          alert('Logged in successfully!');
+          onLoginSuccess({ token }); // Llama a la función onLoginSuccess pasada como prop
           navigate('/'); // Redirige a la página de inicio
         } else {
           throw new Error('Token not found in response');
@@ -48,7 +45,7 @@ const LoginForm = () => {
         throw new Error('Unexpected response structure');
       }
     } catch (error) {
-      console.error('Response error:', error); // Imprime el error en la consola
+      console.error('Response error:', error);
       alert('Failed to log in: ' + (error.response?.data?.message || error.message));
     } finally {
       setSubmitting(false);
