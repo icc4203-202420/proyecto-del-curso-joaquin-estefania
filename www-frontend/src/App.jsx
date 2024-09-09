@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { jwtDecode } from "jwt-decode";
 import Home from './components/Home';
 import BeerList from './components/BeerList';
 import BarList from './components/BarList';
@@ -16,7 +17,7 @@ function App() {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const decodedToken = jwt_decode(token);
+        const decodedToken = jwtDecode(token);
         setUser(decodedToken);
       } catch (error) {
         // Si el token no es válido, elimina el token y reinicia el estado
@@ -31,16 +32,42 @@ function App() {
     localStorage.setItem('token', user.token); // Guarda el token en localStorage
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Elimina el token del localStorage
+    setUser(null); // Limpia el estado del usuario
+  };
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
-        <Route path="/login" element={!user ? <LoginForm onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/" />} />
-        <Route path="/signup" element={<RegistrationForm />} />
-        <Route path="/beers" element={<BeerList />} />
-        <Route path="/bars" element={<BarList />} />
-        <Route path="/bars/:id/events" element={<Events />} />
-        <Route path="/search" element={<SearchUser />} />
+        <Route
+          path="/"
+          element={user ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/login"
+          element={!user ? <LoginForm onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/signup"
+          element={!user ? <RegistrationForm /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/beers"
+          element={user ? <BeerList /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/bars"
+          element={user ? <BarList /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/bars/:id/events"
+          element={user ? <Events /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/search"
+          element={user ? <SearchUser /> : <Navigate to="/login" />}
+        />
       </Routes>
     </Router>
   );

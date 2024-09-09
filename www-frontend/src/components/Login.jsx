@@ -7,7 +7,7 @@ import useAxios from 'axios-hooks';
 import { jwtDecode } from "jwt-decode";
 import { useNavigate} from 'react-router-dom';
 
-const LoginForm = ({ onLoginSuccess }) => {
+const LoginForm = () => {
   const navigate = useNavigate();
 
   const [, executePost] = useAxios(
@@ -38,9 +38,6 @@ const LoginForm = ({ onLoginSuccess }) => {
         const token = response.data.status.data.token; // Accede al token desde data
         if (token) {
           localStorage.setItem('token', token);
-          
-          const decodedToken = jwtDecode(token);
-          onLoginSuccess(decodedToken);
   
           alert('Logged in successfully!');
           navigate('/'); // Redirige a la página de inicio
