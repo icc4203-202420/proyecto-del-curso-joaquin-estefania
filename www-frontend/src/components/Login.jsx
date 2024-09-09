@@ -99,6 +99,14 @@ const LoginForm = ({ onLoginSuccess }) => {
               >
                 Login
               </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => navigate('/signup')}
+                sx={{ ml: 2 }} // Espaciado entre los botones
+              >
+                Sign Up
+              </Button>
             </Box>
           </Box>
         </Form>

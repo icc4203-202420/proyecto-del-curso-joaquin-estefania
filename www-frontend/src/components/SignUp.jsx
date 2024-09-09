@@ -2,10 +2,12 @@ import React from 'react';
 import { TextField, Button, Box, Grid, Typography } from '@mui/material';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
 import useAxios from 'axios-hooks';
+import { useNavigate } from 'react-router-dom';
 
 const SignUpForm = () => {
+  const navigate = useNavigate(); // Hook para la navegación
+
   const [, executePost] = useAxios(
     {
       url: '/api/v1/signup',
@@ -50,8 +52,9 @@ const SignUpForm = () => {
       });
       alert('Signed up successfully!');
       resetForm();
+      navigate('/login'); // Redirige a la página de login
     } catch (error) {
-      alert('Failed to sign up: ' + error.response.data.message);
+      alert('Failed to sign up: ' + (error.response?.data?.message || error.message));
     } finally {
       setSubmitting(false);
     }
