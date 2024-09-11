@@ -7,32 +7,47 @@ import axios from 'axios';
 
 const RateSubmit = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Cambiado a 'id' en lugar de 'beerId'
+  const { id } = useParams(); // Se obtiene el ID de la cerveza desde la URL
 
+  // Esquema de validación para los campos del formulario
   const validationSchema = Yup.object().shape({
     rating: Yup.number()
       .min(1, 'Rating must be at least 1')
       .max(5, 'Rating cannot be more than 5')
       .required('Rating is required'),
     text: Yup.string()
-      .min(15, 'Review must be at least 15 words')
+      .min(15, 'Review must be at least 15 characters long')
       .required('Review text is required'),
   });
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  // Maneja el envío del formulario
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      await axios.post(`/api/v1/beers/${id}/reviews`, { // Asegúrate de usar 'id'
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found.');
+      }
+
+      // Enviar el POST request con los datos de la reseña
+      await axios.post(`/api/v1/beers/${id}/reviews`, {
         review: {
           rating: values.rating,
           text: values.text,
         },
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Autorización JWT
+        },
       });
+
       alert('Review submitted successfully!');
-      navigate(`/beers/${id}`);
+      resetForm(); // Reinicia el formulario
+      navigate(`/beers/${id}`); // Redirige a la página de la cerveza
+
     } catch (error) {
-      alert('Failed to submit review: ' + error.message);
+      alert('Failed to submit review: ' + (error.response?.data?.message || error.message));
     } finally {
-      setSubmitting(false);
+      setSubmitting(false); // Indica que la acción ha finalizado
     }
   };
 
