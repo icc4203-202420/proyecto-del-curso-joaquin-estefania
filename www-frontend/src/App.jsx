@@ -11,6 +11,7 @@ import RegistrationForm from './components/SignUp';
 import LoginForm from './components/Login';
 import RateSubmit from './components/RateSubmit';
 function App() {
+  
   const [user, setUser] = useState(null);
 
   useEffect(() => {

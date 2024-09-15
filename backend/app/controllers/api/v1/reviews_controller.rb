@@ -1,6 +1,6 @@
 class API::V1::ReviewsController < ApplicationController
   before_action :set_beer, only: [:create]
-  before_action :authenticate_user!  # Asegúrate de que el usuario esté autenticado
+  before_action :authenticate_user!
 
   def index
     @reviews = Review.where(user: current_user)
@@ -19,6 +19,7 @@ class API::V1::ReviewsController < ApplicationController
   def create
     @review = @beer.reviews.build(review_params)
     @review.user = current_user  # Asociar la review al usuario actual
+    Rails.logger.debug("Authorization header: #{request.headers['Authorization']}")
 
     if @review.save
       render json: @review, status: :created, location: api_v1_review_url(@review)
@@ -49,12 +50,14 @@ class API::V1::ReviewsController < ApplicationController
   private
 
   def set_beer
-    @beer = Beer.find(params[:beer_id])  # Encontrar la cerveza a la que se está añadiendo la review
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Beer not found' }, status: :not_found
+    @beer = Beer.find_by(id: params[:beer_id])
+    unless @beer
+      render json: { error: 'Beer not found' }, status: :not_found
+    end
   end
 
   def review_params
     params.require(:review).permit(:text, :rating)
   end
+
 end

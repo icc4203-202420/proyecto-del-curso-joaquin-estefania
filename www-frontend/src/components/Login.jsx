@@ -36,6 +36,7 @@ const LoginForm = ({ onLoginSuccess }) => {
         const token = response.data.status.data.token;
         if (token) {
           localStorage.setItem('token', token);
+          console.log(response.data)
           onLoginSuccess({ token }); // Llama a la función onLoginSuccess pasada como prop
           navigate('/'); // Redirige a la página de inicio
         } else {
