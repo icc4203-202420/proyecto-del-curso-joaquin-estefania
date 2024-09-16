@@ -10,6 +10,8 @@ import SearchUser from './components/SearchUser';
 import RegistrationForm from './components/SignUp';
 import LoginForm from './components/Login';
 import RateSubmit from './components/RateSubmit';
+import MapComponent from './components/MapComponent';
+
 function App() {
   
   const [user, setUser] = useState(null);
@@ -75,6 +77,10 @@ function App() {
         <Route
           path="/search"
           element={user ? <SearchUser /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/map"
+          element={user ? <MapComponent /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>
