@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { TextField, Button, Box } from '@mui/material';
+import { TextField, Button, Box, Slider, Typography } from '@mui/material'; // Importar Slider y Typography
 import axios from 'axios';
 
 const RateSubmit = () => {
@@ -53,21 +53,31 @@ const RateSubmit = () => {
 
   return (
     <Formik
-      initialValues={{ rating: '', text: '' }}
+      initialValues={{ rating: 3, text: '' }} // Valor inicial de rating
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
-      {({ isSubmitting, errors, touched }) => (
+      {({ isSubmitting, errors, touched, setFieldValue, values }) => (
         <Form>
           <Box sx={{ mt: 3 }}>
-            <Field
-              as={TextField}
+            <Typography gutterBottom>Rating (1-5)</Typography>
+            <Slider
               name="rating"
-              label="Rating (1-5)"
-              fullWidth
-              error={touched.rating && Boolean(errors.rating)}
-              helperText={touched.rating && errors.rating}
+              value={values.rating}
+              onChange={(event, newValue) => setFieldValue('rating', newValue)}
+              min={1}
+              max={5}
+              step={0.1} // Permite decimales
+              marks={[
+                { value: 1, label: '1' },
+                { value: 5, label: '5' },
+              ]}
+              valueLabelDisplay="auto"
             />
+            {touched.rating && errors.rating && (
+              <Typography color="error">{errors.rating}</Typography>
+            )}
+            
             <Field
               as={TextField}
               name="text"
