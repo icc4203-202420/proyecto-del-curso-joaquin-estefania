@@ -7,21 +7,8 @@ class API::V1::BarsController < ApplicationController
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
   def index
-    bars = Bar.joins(:address)
-
-    # Filtra por ciudad si está presente
-    bars = bars.where('addresses.city ILIKE ?', "%#{params[:city]}%") if params[:city].present?
-
-    # Filtra por calle (line1) si está presente
-    bars = bars.where('addresses.line1 ILIKE ?', "%#{params[:line1]}%") if params[:line1].present?
-
-    # Filtra por segunda línea de la dirección (line2) si está presente
-    bars = bars.where('addresses.line2 ILIKE ?', "%#{params[:line2]}%") if params[:line2].present?
-
-    # Filtra por país si el country_id está presente
-    bars = bars.where('addresses.country_id = ?', params[:country_id]) if params[:country_id].present?
-
-    render json: { bars: bars }
+    @bars = Bar.all
+    render json: { bars: @bars }, status: :ok
   end
 
   def show
