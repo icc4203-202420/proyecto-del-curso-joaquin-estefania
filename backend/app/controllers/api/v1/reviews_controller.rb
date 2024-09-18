@@ -1,49 +1,27 @@
 class API::V1::ReviewsController < ApplicationController
-  before_action :set_beer, only: [:create]
-  before_action :authenticate_user!
+  before_action :set_beer, only: [:index, :create]
+  before_action :authenticate_user!, except: [:index] # El método index debe ser público para que todos puedan ver las evaluaciones
 
   def index
-    @reviews = Review.where(user: current_user)
-    render json: { reviews: @reviews }, status: :ok
-  end
+    # Parámetros de paginación
+    page = params[:page] || 1
+    limit = params[:limit] || 5
 
-  def show
-    @review = Review.find_by(id: params[:id])
-    if @review
-      render json: { review: @review }, status: :ok
-    else
-      render json: { error: "Review not found" }, status: :not_found
-    end
+    # Paginamos las evaluaciones
+    reviews = @beer.reviews.page(page).per(limit)
+    total_pages = reviews.total_pages
+
+    render json: { reviews: reviews, totalPages: total_pages }, status: :ok
   end
 
   def create
     @review = @beer.reviews.build(review_params)
-    @review.user = current_user  # Asociar la review al usuario actual
-    Rails.logger.debug("Authorization header: #{request.headers['Authorization']}")
+    @review.user = current_user
 
     if @review.save
       render json: @review, status: :created, location: api_v1_review_url(@review)
     else
       render json: @review.errors, status: :unprocessable_entity
-    end
-  end
-
-  def update
-    @review = Review.find_by(id: params[:id])
-    if @review.update(review_params)
-      render json: @review, status: :ok
-    else
-      render json: @review.errors, status: :unprocessable_entity
-    end
-  end
-
-  def destroy
-    @review = Review.find_by(id: params[:id])
-    if @review
-      @review.destroy
-      head :no_content
-    else
-      render json: { error: "Review not found" }, status: :not_found
     end
   end
 
@@ -59,5 +37,4 @@ class API::V1::ReviewsController < ApplicationController
   def review_params
     params.require(:review).permit(:text, :rating)
   end
-
 end
