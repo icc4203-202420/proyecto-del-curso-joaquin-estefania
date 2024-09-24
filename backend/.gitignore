@@ -22,7 +22,6 @@ secrets.yml
 /public/assets/
 
 # Ignore master key for encrypting credentials and more.
-/config/master.key
 
 # Ignore pid files, but keep the directory
 /tmp/pids/
