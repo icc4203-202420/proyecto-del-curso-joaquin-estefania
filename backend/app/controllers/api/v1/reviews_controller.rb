@@ -7,12 +7,21 @@ class API::V1::ReviewsController < ApplicationController
     page = params[:page] || 1
     limit = params[:limit] || 5
 
-    # Paginamos las evaluaciones
-    reviews = @beer.reviews.page(page).per(limit)
+    # Paginamos las evaluaciones e incluimos la relación con el usuario para evitar consultas adicionales
+    reviews = @beer.reviews.includes(:user).page(page).per(limit)
     total_pages = reviews.total_pages
 
-    render json: { reviews: reviews, totalPages: total_pages }, status: :ok
+    # Serializamos las evaluaciones junto con la información del usuario (handle)
+    render json: {
+      reviews: reviews.as_json(
+        only: [:id, :text, :rating, :beer_id, :created_at, :updated_at],
+        include: { user: { only: [:id, :handle] } } # Incluye el handle del usuario
+      ),
+      totalPages: total_pages
+    }, status: :ok
   end
+
+
 
   def create
     @review = @beer.reviews.build(review_params)

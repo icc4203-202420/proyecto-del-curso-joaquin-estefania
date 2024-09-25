@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Importa useNavigate
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -9,47 +9,53 @@ import CardMedia from '@mui/material/CardMedia';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Pagination from '@mui/material/Pagination'; // Importa el componente de paginación de MUI
+import Pagination from '@mui/material/Pagination';
+import Button from '@mui/material/Button'; 
 
 const BeerDetails = () => {
-  const { id } = useParams(); // Obtener el ID de la cerveza desde la URL
+  const { id } = useParams();
   const [beer, setBeer] = useState(null);
-  const [bars, setBars] = useState([]);
-  const [reviews, setReviews] = useState([]); // Estado para las evaluaciones
-  const [page, setPage] = useState(1); // Estado para la página actual
-  const [totalPages, setTotalPages] = useState(1); // Estado para el total de páginas
-  const reviewsPerPage = 5; // Número de evaluaciones por página
+  const [reviews, setReviews] = useState([]);
+  const [selectedReview, setSelectedReview] = useState(null); // Estado para la reseña seleccionada
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const reviewsPerPage = 5;
+  const navigate = useNavigate(); // Navegador de react-router
 
   useEffect(() => {
-    // Función para obtener los detalles de la cerveza
     const fetchBeerDetails = async () => {
       try {
         const response = await axios.get(`/api/v1/beers/${id}`);
         setBeer(response.data.beer);
-        setBars(response.data.bars || []);
       } catch (error) {
         console.error('Error fetching beer details:', error);
       }
     };
 
-    // Función para obtener las evaluaciones con paginación
     const fetchReviews = async () => {
       try {
         const response = await axios.get(`/api/v1/beers/${id}/reviews?page=${page}&limit=${reviewsPerPage}`);
         setReviews(response.data.reviews);
-        setTotalPages(response.data.totalPages); // Asume que el backend envía el número total de páginas
+        setTotalPages(response.data.totalPages);
       } catch (error) {
         console.error('Error fetching reviews:', error);
       }
-    };
+    };    
 
     fetchBeerDetails();
     fetchReviews();
   }, [id, page]);
 
-  // Función para cambiar de página
   const handlePageChange = (event, value) => {
     setPage(value);
+  };
+
+  const handleRateButtonClick = () => {
+    navigate(`/beers/${id}/rate`); // Navega a la ruta de creación de reseñas
+  };
+
+  const handleReviewClick = (review) => {
+    setSelectedReview(review); // Asigna la reseña seleccionada
   };
 
   if (!beer) return <Typography>Loading...</Typography>;
@@ -67,30 +73,56 @@ const BeerDetails = () => {
           <Typography variant="h5">{beer.name}</Typography>
           <Typography variant="body1">Type: {beer.type}</Typography>
           <Typography variant="body1">Style: {beer.style}</Typography>
-          {/* Agrega otros detalles de la cerveza */}
         </CardContent>
       </Card>
 
-      <Typography variant="h6" sx={{ mt: 2 }}>Reviews:</Typography>
+      <Typography variant="h6" sx={{ mt: 3 }}>Reviews:</Typography>
       <List>
         {reviews.map((review) => (
-          <ListItem key={review.id}>
+          <ListItem key={review.id} alignItems="flex-start">
             <ListItemText
               primary={`Rating: ${review.rating}`}
-              secondary={review.text}
+              secondary={
+                <>
+                  {review.text}
+                  <br />
+                  <Typography variant="body2" color="textSecondary">
+                    User: {review.user ? review.user.handle : 'Unknown User'}
+                  </Typography>
+                </>
+              }
             />
           </ListItem>
         ))}
       </List>
 
-      {/* Componente de paginación */}
-      <Pagination
-        count={totalPages} // Número total de páginas
-        page={page} // Página actual
-        onChange={handlePageChange} // Controlador de cambio de página
-        color="primary"
-        sx={{ mt: 2 }}
-      />
+
+      {/* Botón para redirigir a la creación de reseña */}
+      {!selectedReview && (
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ mt: 2 }}
+          onClick={handleRateButtonClick}
+        >
+          Rate this Beer
+        </Button>
+      )}
+
+      {/* Mostrar la reseña seleccionada */}
+      {selectedReview && (
+        <Card sx={{ mt: 2 }}>
+          <CardContent>
+            <Typography variant="h6">Selected Review</Typography>
+            <Typography variant="body1">
+              {selectedReview.text}
+            </Typography>
+            <Typography variant="body2">
+              Rating: {selectedReview.rating}
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
     </Container>
   );
 };
