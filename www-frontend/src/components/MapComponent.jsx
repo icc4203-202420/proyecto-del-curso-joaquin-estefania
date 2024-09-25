@@ -1,11 +1,12 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import axios from 'axios';
+import TextField from '@mui/material/TextField'; // Importar el componente TextField
 
 const MapComponent = () => {
   const [map, setMap] = useState(null);
-  const [bars, setBars] = useState([]);
+  const [bars, setBars] = useState([]); // Bares cargados desde el backend
+  const [searchTerm, setSearchTerm] = useState(''); // Término de búsqueda
   const mapNodeRef = useRef(null);
   const markersRef = useRef([]);
   const autocompleteRef = useRef(null);
@@ -47,9 +48,7 @@ const MapComponent = () => {
         map.setZoom(12);
 
         // Obtener bares desde el backend
-        const allBars = await fetchBars();
-        const filteredBars = filterBarsByCoordinates(allBars, location, 5000); // Filtrar bares dentro de 5km
-        setBars(filteredBars);
+        fetchBarsAndSet(); // Obtener y mostrar todos los bares
       });
 
       // Geolocalización del usuario
@@ -68,6 +67,9 @@ const MapComponent = () => {
               url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
             },
           });
+
+          // Obtener bares desde el backend
+          fetchBarsAndSet(); // Obtener y mostrar todos los bares
         },
         (error) => {
           console.error('Error getting user location:', error);
@@ -88,24 +90,21 @@ const MapComponent = () => {
     }
   };
 
-  const filterBarsByCoordinates = (bars, center, radius) => {
-    const radiusInKm = radius / 1000;
-
-    return bars.filter(bar => {
-      const barPos = new google.maps.LatLng(bar.latitude, bar.longitude);
-      const centerPos = new google.maps.LatLng(center.lat(), center.lng());
-      const distance = google.maps.geometry.spherical.computeDistanceBetween(barPos, centerPos);
-      return distance <= radiusInKm * 1000; 
-    });
+  const fetchBarsAndSet = async () => {
+    const allBars = await fetchBars();
+    setBars(allBars); // Establecer todos los bares
   };
 
+  // Filtrar bares por nombre
+  const filteredBars = bars.filter(bar => bar.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
   useEffect(() => {
-    if (!map || !Array.isArray(bars) || bars.length === 0) return;
+    if (!map || !Array.isArray(filteredBars) || filteredBars.length === 0) return;
 
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
-    const newMarkers = bars.map(bar => {
+    const newMarkers = filteredBars.map(bar => {
       const marker = new google.maps.Marker({
         position: { lat: bar.latitude, lng: bar.longitude },
         map,
@@ -118,24 +117,30 @@ const MapComponent = () => {
       return marker;
     });
 
+    // Zoom en el primer bar filtrado si existe
+    const firstFilteredBar = filteredBars[0];
+    if (firstFilteredBar) {
+      const { latitude, longitude } = firstFilteredBar;
+      map.setCenter({ lat: latitude, lng: longitude });
+      map.setZoom(12); // Ajusta el nivel de zoom según sea necesario
+    }
+
     return () => {
       markersRef.current.forEach(marker => marker.setMap(null));
     };
-  }, [bars, map]);
+  }, [filteredBars, map]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <input
-        id="autocomplete"
-        type="text"
-        placeholder="Buscar por país, ciudad, calle, número..."
-        style={{ 
-          marginBottom: '10px', 
-          padding: '5px', 
-          width: '90%', 
-          maxWidth: '500px', 
-          borderRadius: '5px', 
-          border: '1px solid #ccc' 
+      <TextField
+        variant="outlined" // Puedes cambiar a "filled" o "standard" si lo prefieres
+        label="Buscar bares por nombre..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)} // Actualizar el término de búsqueda
+        style={{
+          marginBottom: '10px',
+          width: '90%',
+          maxWidth: '500px',
         }}
       />
       <div

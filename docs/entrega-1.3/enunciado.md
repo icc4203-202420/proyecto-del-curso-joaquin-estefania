@@ -11,7 +11,7 @@ En esta entrega el foco está en implementar funcionalidad en la aplicación que
 1. [1.5] Los usuarios (ver modelo `User` y tabla en `db/schema.rb`) pueden registrarse ingresando nombre, apellido, email, un _handle_ (similar a X o Instagram, p.ej.,@kingofbeers), y datos de dirección opcionales (ver modelo `Address` y tabla en `db/schema.rb`). Además, pueden ingresar a la aplicación usando sus credenciales, y cerrar sesión. <READY>
 5. [1.0] Los usuarios pueden buscar una cerveza en la aplicación (`Beer`), y ver los detalles de la cerveza, incluyendo qué cervecería la produce (`Brewery`), y qué bares la sirven. <READY>
 6. [2.0] Los usuarios pueden escribir evaluaciones (ver modelo `Review` y tabla en `schema.rb`) de las cervezas, con rating, y texto. Las evaluaciones de los usuarios no pueden tener menos de 15 palabras. Además, el rating de evaluación es un valor decimal que debe estar entre 1 y 5 inclusive. Estos dos componentes de la evaluación son obligatorios. <READY>
-7. [1.5] Los usuarios pueden ver la evaluación global de una cerveza (rating promedio), junto con a su propia evaluación de la cerveza (si existe) y las evaluaciones de otros usuarios. 
+7. [1.5] Los usuarios pueden ver la evaluación global de una cerveza (rating promedio), junto con a su propia evaluación de la cerveza (si existe) y las evaluaciones de otros usuarios. <READY>
 
 ## Implementación de la Funcionalidad
 
