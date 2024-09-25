@@ -7,21 +7,47 @@ class API::V1::EventsController < ApplicationController
   before_action :set_bar, only: [:index] # Añadir para el punto 2.4
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
+
+  # POST /api/v1/bars/:bar_id/events/:event_id/attend
+  def attend
+    event = @bar.events.find_by(id: params[:event_id])
+
+    if event.nil?
+      render json: { message: 'Event not found.' }, status: :not_found
+      return
+    end
+
+    attendance = Attendance.new(user_id: current_user.id, event_id: event.id)
+
+    if attendance.save
+      render json: { message: 'Attendance recorded successfully.' }, status: :created
+    else
+      render json: { message: 'Error recording attendance.', errors: attendance.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   # GET /api/v1/bar/:bar_id/events
   def index
-    events = @bar.events # Obtener los eventos asociados al bar
+    events = @bar.events.includes(attendances: :user) # Cargar attendances y usuarios asociados
     if events.any?
-      render json: { events: events.as_json }, status: :ok
+      render json: {
+        events: events.as_json(include: {
+          attendances: {
+            include: {
+              user: { only: [:id, :first_name, :last_name, :email] } # Seleccionar solo los atributos que quieres
+            }
+          }
+        })
+      }, status: :ok
     else
       render json: { message: 'No events found for this bar.' }, status: :ok
     end
   end
-
   # GET /api/v1/events/:id
   def show
     if @event.image.attached?
-      render json: @event.as_json.merge({ 
-        image_url: url_for(@event.image), 
+      render json: @event.as_json.merge({
+        image_url: url_for(@event.image),
         thumbnail_url: url_for(@event.thumbnail) }),
         status: :ok
     else
@@ -40,7 +66,7 @@ class API::V1::EventsController < ApplicationController
       render json: @event.errors, status: :unprocessable_entity
     end
   end
-  
+
   # PATCH /api/v1/events/:id
   def update
     handle_image_attachment if event_params[:image_base64]
@@ -82,5 +108,5 @@ class API::V1::EventsController < ApplicationController
   def handle_image_attachment
     decoded_image = decode_image(event_params[:image_base64])
     @event.image.attach(io: decoded_image[:io], filename: decoded_image[:filename], content_type: decoded_image[:content_type])
-  end  
+  end
 end

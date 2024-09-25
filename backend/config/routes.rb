@@ -16,16 +16,18 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Defines the root path route ("/")
-  # root "posts#index"
-
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
       resources :bars do
         resources :events, only: [:index]  # Añadir eventos anidados a bares
       end
 
-      resources :events, only: [:show, :create, :update, :destroy]  # Rutas para otras acciones de eventos (no anidadas)
+      resources :events, only: [:show, :create, :update, :destroy] do
+        member do
+          post 'attend'  # Ruta para asistir a un evento
+        end
+      end
+
       resources :beers
       resources :users do
         resources :reviews, only: [:index]
@@ -36,5 +38,4 @@ Rails.application.routes.draw do
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
     end
   end
-
 end

@@ -10,8 +10,8 @@ En esta entrega el foco está en implementar funcionalidad en la aplicación enf
 
 2. [1.0] Los usuarios pueden buscar bares en la aplicación por nombre. <READY>
 3. [2.0] Los usuarios pueden buscar bares por ubicación (país, ciudad, calle y número), usando un mapa.
-4. [1.5] Los usuarios pueden ver la lista de eventos (ver modelo `Event` en `schema.rb`) que se celebran en un Bar (modelo `Bar` y tabla en `schema.rb`).
-8. [1.5] Los usuarios pueden asistir (hacer "_check-in_") en un evento (ver modelo `Attendance` y tabla en `schema.rb`), y ver todos los usuarios que también han hecho _check-in_.
+4. [1.5] Los usuarios pueden ver la lista de eventos (ver modelo `Event` en `schema.rb`) que se celebran en un Bar (modelo `Bar` y tabla en `schema.rb`). <READY>
+8. [1.5] Los usuarios pueden asistir (hacer "_check-in_") en un evento (ver modelo `Attendance` y tabla en `schema.rb`), y ver todos los usuarios que también han hecho _check-in_. 
 
 ## Implementación de la Funcionalidad
 
