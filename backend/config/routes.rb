@@ -1,40 +1,49 @@
 Rails.application.routes.draw do
-  # devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Ruta para obtener el usuario actual
   get 'current_user', to: 'current_user#index'
+
+  # Rutas para Devise con controladores personalizados
   devise_for :users, path: '', path_names: {
     sign_in: 'api/v1/login',
     sign_out: 'api/v1/logout',
     registration: 'api/v1/signup'
-  },
-  controllers: {
+  }, controllers: {
     sessions: 'api/v1/sessions',
     registrations: 'api/v1/registrations'
   }
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Ruta de estado de salud
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # Namespace para la API versión 1
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
+      # Rutas para bares y eventos anidados
       resources :bars do
-        resources :events, only: [:index]  # Añadir eventos anidados a bares
+        resources :events, only: [:index]
       end
 
+      # Rutas para eventos (incluye la acción "attend" para check-in)
       resources :events, only: [:show, :create, :update, :destroy] do
         member do
-          post 'attend'  # Ruta para asistir a un evento
+          post 'attend'  # Ruta para hacer check-in en un evento
         end
       end
 
-      resources :beers
+      # Rutas para cervezas
+      resources :beers do
+        resources :reviews, only: [:create, :index]  # Rutas anidadas para las reviews de cervezas
+      end
+
+      # Rutas para usuarios, incluyendo búsqueda y reviews
       resources :users do
         resources :reviews, only: [:index]
+        collection do
+          get 'search'  # Ruta para buscar usuarios
+        end
       end
-      resources :beers do
-        resources :reviews, only: [:create, :index]  # Añadir esta línea
-      end
+
+      # Rutas para las reviews de forma independiente
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
     end
   end

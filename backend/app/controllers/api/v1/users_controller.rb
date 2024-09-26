@@ -10,6 +10,16 @@ class API::V1::UsersController < ApplicationController
 
   end
 
+  def search
+    if params[:handle].present?
+      # Convierte el campo 'handle' y el parámetro de búsqueda a minúsculas para que sea insensible a mayúsculas
+      users = User.where('LOWER(handle) LIKE ?', "%#{params[:handle].downcase}%")
+      render json: users
+    else
+      render json: { error: "Handle parameter missing" }, status: :bad_request
+    end
+  end
+
   def create
     @user = User.new(user_params)
     if @user.save
