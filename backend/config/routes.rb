@@ -43,6 +43,9 @@ Rails.application.routes.draw do
         end
       end
 
+      # Rutas para amistades
+      resources :friendships, only: [:create]  # Ruta para crear amistades (POST a /friendships)
+
       # Rutas para las reviews de forma independiente
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
     end
