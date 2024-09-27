@@ -3,28 +3,36 @@ import axios from 'axios';
 import { TextField, List, ListItem, Typography, Button, Container } from '@mui/material';
 
 function SearchUser() {
-  const [query, setQuery] = useState(''); // Estado para el valor del campo de búsqueda
-  const [users, setUsers] = useState([]); // Estado para almacenar los usuarios filtrados
-  const [selectedBar, setSelectedBar] = useState(''); // Estado para almacenar el bar donde se conocieron
+  const [query, setQuery] = useState(''); // Estado para la búsqueda de usuarios
+  const [users, setUsers] = useState([]); // Lista de usuarios filtrados
+  const [eventName, setEventName] = useState(''); // Estado para almacenar el nombre del evento ingresado
 
+  // Efecto para buscar usuarios basados en la consulta (handle)
   useEffect(() => {
     if (query.length > 2) {
-      axios.get(`/api/v1/users/search?handle=${query}`)  // Cambia `query` por `handle`
+      axios.get(`/api/v1/users/search?handle=${query}`)
         .then(response => {
-          setUsers(response.data); // Actualiza el estado con los usuarios encontrados
+          setUsers(response.data); // Almacena los usuarios encontrados en el estado
         })
         .catch(error => {
           console.error('Error fetching users:', error);
         });
     } else {
-      setUsers([]); // Vacía la lista si la consulta es menor a 3 caracteres
+      setUsers([]); // Si la consulta es menor a 3 caracteres, limpia la lista de usuarios
     }
   }, [query]);
 
+  // Función para agregar amigo
   const handleAddFriend = (userId) => {
+    const token = localStorage.getItem('token'); // Obtén el token JWT almacenado
+  
     axios.post('/api/v1/friendships', {
-      friend_id: userId, // El usuario que queremos agregar
-      bar_id: selectedBar || null // Opcional: el evento/bar donde se encontraron
+      friend_id: userId,
+      event_name: eventName || null // Envía el nombre del evento si fue ingresado, de lo contrario, envía null
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}` // Incluye el token JWT en la cabecera
+      }
     })
     .then(response => {
       alert('Solicitud de amistad enviada.');
@@ -37,25 +45,28 @@ function SearchUser() {
   return (
     <Container>
       <Typography variant="h4">Buscar Usuarios</Typography>
+      
+      {/* Campo de texto para buscar usuarios por su handle */}
       <TextField
         label="Buscar por handle"
         variant="outlined"
         fullWidth
         value={query}
-        onChange={(e) => setQuery(e.target.value)} // Actualiza el estado con el valor del input
+        onChange={(e) => setQuery(e.target.value)} // Actualiza la consulta de búsqueda
         margin="normal"
       />
       
-      {/* Campo opcional para seleccionar un evento/bar */}
+      {/* Campo de texto opcional para ingresar el nombre del evento */}
       <TextField
-        label="Bar donde se conocieron (opcional)"
+        label="Nombre del evento donde se conocieron (opcional)"
         variant="outlined"
         fullWidth
-        value={selectedBar}
-        onChange={(e) => setSelectedBar(e.target.value)} // Actualiza el estado del bar seleccionado
+        value={eventName}
+        onChange={(e) => setEventName(e.target.value)} // Actualiza el nombre del evento
         margin="normal"
       />
 
+      {/* Lista de usuarios filtrados */}
       <List>
         {users.length > 0 ? (
           users.map((user) => (
