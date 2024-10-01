@@ -20,10 +20,10 @@ Rails.application.routes.draw do
     namespace :v1 do
       # Rutas para bares y eventos anidados
       resources :bars do
-        resources :events, only: [:index]
+        resources :events, only: [:index]  # Para obtener eventos de un bar específico
       end
 
-      # Rutas para eventos (incluye la acción "attend" para check-in)
+      # Rutas para eventos
       resources :events, only: [:show, :create, :update, :destroy] do
         member do
           post 'attend'  # Ruta para hacer check-in en un evento

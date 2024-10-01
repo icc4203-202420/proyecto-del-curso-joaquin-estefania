@@ -17,27 +17,48 @@ function Events() {
     });
   }, [id]); // El efecto se ejecutará cada vez que cambie el id del bar
 
-// Parte del código del componente Events
-const handleCheckIn = (eventId) => {
-  axios.post(`/api/v1/events/${eventId}/attend`)
-    .then((response) => {
-      console.log(response.data.message); // Mensaje de éxito
-      // Actualizar el estado si es necesario para reflejar la asistencia
-    })
-    .catch((error) => {
-      console.error("Error checking in:", error.response.data.message); // Manejar errores
-    });
-};
+  const handleCheckIn = (eventId) => {
+    console.log("ID del evento:", eventId);  // Imprimir el id en la consola
 
-// Agregar el botón en el renderizado de eventos
-<List>
-  {events.map(event => (
-    <ListItem key={event.id}>
-      <Typography variant="h6">{event.name}</Typography>
-      <button onClick={() => handleCheckIn(event.id)}>Check-in</button>
-    </ListItem>
-  ))}
-</List>
+    // Recupera el token desde el localStorage
+    const token = localStorage.getItem('token');
+
+    // Solicitud POST para hacer check-in
+    axios.post(`/api/v1/events/${eventId}/attend`, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      console.log("Respuesta del servidor:", response.data); // Imprimir la respuesta
+      // Actualiza los eventos para incluir al nuevo asistente
+      setEvents(prevEvents =>
+        prevEvents.map(event => {
+          if (event.id === eventId) {
+            // Agregar el nuevo usuario a la lista de asistencias
+            return {
+              ...event,
+              attendances: [
+                ...event.attendances,
+                {
+                  user: {
+                    id: response.data.user_id, // Suponiendo que el servidor devuelve el ID del usuario
+                    first_name: response.data.first_name, // Suponiendo que el servidor devuelve el nombre
+                    last_name: response.data.last_name // Suponiendo que el servidor devuelve el apellido
+                  }
+                }
+              ]
+            };
+          }
+          return event;
+        })
+      );
+    })
+    .catch(error => {
+      console.error('Error checking in:', error);
+    });
+  };
 
   return (
     <Container>

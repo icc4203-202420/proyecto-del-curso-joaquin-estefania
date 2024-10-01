@@ -4,13 +4,13 @@ class API::V1::EventsController < ApplicationController
 
   respond_to :json
   before_action :set_event, only: [:show, :update, :destroy]
-  before_action :set_bar, only: [:index] # Añadir para el punto 2.4
-  before_action :verify_jwt_token, only: [:create, :update, :destroy]
+  before_action :set_bar, only: [:index]  # Obtener bar para eventos de ese bar
+  before_action :verify_jwt_token, only: [:create, :update, :destroy, :attend]  # Añadir verify_jwt_token a attend
 
-
-  # POST /api/v1/bars/:bar_id/events/:event_id/attend
+  # POST /api/v1/events/:id/attend
   def attend
-    event = @bar.events.find_by(id: params[:event_id])
+    # Buscamos el evento directamente por la ID
+    event = Event.find_by(id: params[:id])
 
     if event.nil?
       render json: { message: 'Event not found.' }, status: :not_found
@@ -26,15 +26,15 @@ class API::V1::EventsController < ApplicationController
     end
   end
 
-  # GET /api/v1/bar/:bar_id/events
+  # GET /api/v1/bars/:bar_id/events
   def index
-    events = @bar.events.includes(attendances: :user) # Cargar attendances y usuarios asociados
+    events = @bar.events.includes(attendances: :user)  # Cargar attendances y usuarios asociados
     if events.any?
       render json: {
         events: events.as_json(include: {
           attendances: {
             include: {
-              user: { only: [:id, :first_name, :last_name, :email] } # Seleccionar solo los atributos que quieres
+              user: { only: [:id, :first_name, :last_name, :email] }  # Seleccionar solo los atributos que quieres
             }
           }
         })
@@ -43,13 +43,14 @@ class API::V1::EventsController < ApplicationController
       render json: { message: 'No events found for this bar.' }, status: :ok
     end
   end
+
   # GET /api/v1/events/:id
   def show
     if @event.image.attached?
       render json: @event.as_json.merge({
         image_url: url_for(@event.image),
-        thumbnail_url: url_for(@event.thumbnail) }),
-        status: :ok
+        thumbnail_url: url_for(@event.thumbnail)
+      }), status: :ok
     else
       render json: { event: @event.as_json }, status: :ok
     end
@@ -100,9 +101,7 @@ class API::V1::EventsController < ApplicationController
   end
 
   def event_params
-    params.require(:event).permit(
-      :name, :description, :date, :location, :image_base64
-    )
+    params.require(:event).permit(:name, :description, :date, :location, :image_base64)
   end
 
   def handle_image_attachment
