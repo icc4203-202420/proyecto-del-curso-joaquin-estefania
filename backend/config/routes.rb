@@ -1,4 +1,24 @@
 Rails.application.routes.draw do
+  get 'event_pictures/create'
+  
+  namespace :api do
+    namespace :v1 do
+      get 'attendances/attend'
+      post 'events/:id/attend', to: 'attendances#attend'
+      get 'events/:id/attendees', to: 'attendances#list_attendees'
+
+      # Añadimos la ruta de event_pictures anidada dentro de events
+      resources :events, only: [:show, :create, :update, :destroy] do
+        member do
+          post 'attend'  # Ruta para hacer check-in en un evento
+        end
+
+        # Ruta para subir imágenes asociadas a un evento
+        resources :event_pictures, only: [:create]
+      end
+    end
+  end
+
   # Ruta para obtener el usuario actual
   get 'current_user', to: 'current_user#index'
 
@@ -21,13 +41,6 @@ Rails.application.routes.draw do
       # Rutas para bares y eventos anidados
       resources :bars do
         resources :events, only: [:index]  # Para obtener eventos de un bar específico
-      end
-
-      # Rutas para eventos
-      resources :events, only: [:show, :create, :update, :destroy] do
-        member do
-          post 'attend'  # Ruta para hacer check-in en un evento
-        end
       end
 
       # Rutas para cervezas

@@ -28,7 +28,7 @@ class API::V1::EventsController < ApplicationController
 
   # GET /api/v1/bars/:bar_id/events
   def index
-    events = @bar.events.includes(attendances: :user)  # Cargar attendances y usuarios asociados
+    events = @bar.events.includes(attendances: :user, event_pictures: :image_attachment)  # Cargar attendances y event_pictures con imágenes
     if events.any?
       render json: {
         events: events.as_json(include: {
@@ -36,7 +36,8 @@ class API::V1::EventsController < ApplicationController
             include: {
               user: { only: [:id, :first_name, :last_name, :email] }  # Seleccionar solo los atributos que quieres
             }
-          }
+          },
+          event_pictures: { methods: :image_url }  # Incluir la URL de la imagen
         })
       }, status: :ok
     else
@@ -46,11 +47,8 @@ class API::V1::EventsController < ApplicationController
 
   # GET /api/v1/events/:id
   def show
-    if @event.image.attached?
-      render json: @event.as_json.merge({
-        image_url: url_for(@event.image),
-        thumbnail_url: url_for(@event.thumbnail)
-      }), status: :ok
+    if @event.event_pictures.any?
+      render json: @event.as_json(include: { event_pictures: { methods: :image_url } }), status: :ok
     else
       render json: { event: @event.as_json }, status: :ok
     end

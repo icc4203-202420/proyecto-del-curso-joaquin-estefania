@@ -1,62 +1,66 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Container, List, ListItem, Typography, Button, ListItemText } from '@mui/material';
+import { Container, List, ListItem, Typography, Button, ListItemText, Grid } from '@mui/material';
 
 function Events() {
   const { id } = useParams(); // Obtener el ID del bar de la URL
   const [events, setEvents] = useState([]); // Estado para almacenar los eventos
+  const [eventPictures, setEventPictures] = useState([]); // Estado para almacenar las imágenes del evento
+  const inputFiles = useRef(); // Referencia para el input de archivos
+  const [selectedFiles, setSelectedFiles] = useState([]); // Estado para almacenar los archivos seleccionados
+  const [imagePreviews, setImagePreviews] = useState([]); // Estado para almacenar las URLs de las imágenes
 
   // Hook useEffect para hacer la solicitud cuando el componente se monta o cambia el id
   useEffect(() => {
     // Solicitud GET al backend para obtener los eventos de un bar en particular
     axios.get(`/api/v1/bars/${id}/events`).then((response) => {
       setEvents(response.data.events); // Actualiza el estado con los eventos recibidos
+      const pictures = response.data.events.flatMap(event => event.event_pictures || []);
+      setEventPictures(pictures); // Guarda las imágenes del evento
     }).catch((error) => {
       console.error("Error fetching events:", error); // Manejar posibles errores
     });
-  }, [id]); // El efecto se ejecutará cada vez que cambie el id del bar
+  }, [id]);
 
-  const handleCheckIn = (eventId) => {
-    console.log("ID del evento:", eventId);  // Imprimir el id en la consola
+  const handleFileChange = () => {
+    const files = inputFiles.current.files;
+    console.log(files); // Aquí puedes ver los archivos adjuntados
 
-    // Recupera el token desde el localStorage
-    const token = localStorage.getItem('token');
+    // Crear un array de URLs de las imágenes seleccionadas para mostrar la vista previa
+    const imageUrls = Array.from(files).map(file => URL.createObjectURL(file));
+    setImagePreviews(imageUrls); // Almacenar las URLs en el estado para mostrar la vista previa
+    setSelectedFiles(files); // Actualizar el estado con los archivos seleccionados
+  };
 
-    // Solicitud POST para hacer check-in
-    axios.post(`/api/v1/events/${eventId}/attend`, {}, {
+  const handleUploadPhoto = (eventId) => {
+    if (!selectedFiles.length) return;  // Verifica si hay archivos seleccionados
+  
+    const formData = new FormData();
+    Array.from(selectedFiles).forEach(file => {
+      formData.append('event_picture[image][]', file);  // Para múltiples archivos
+    });
+  
+    const token = localStorage.getItem('token');  // Recupera el token
+  
+    axios.post(`/api/v1/events/${eventId}/event_pictures`, formData, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${token}`
       }
     })
     .then(response => {
-      console.log("Respuesta del servidor:", response.data); // Imprimir la respuesta
-      // Actualiza los eventos para incluir al nuevo asistente
-      setEvents(prevEvents =>
-        prevEvents.map(event => {
-          if (event.id === eventId) {
-            // Agregar el nuevo usuario a la lista de asistencias
-            return {
-              ...event,
-              attendances: [
-                ...event.attendances,
-                {
-                  user: {
-                    id: response.data.user_id, // Suponiendo que el servidor devuelve el ID del usuario
-                    first_name: response.data.first_name, // Suponiendo que el servidor devuelve el nombre
-                    last_name: response.data.last_name // Suponiendo que el servidor devuelve el apellido
-                  }
-                }
-              ]
-            };
-          }
-          return event;
-        })
-      );
+      console.log("Imagen subida con éxito:", response.data);
+      alert("Imagen subida con éxito");
+
+      // Recargar las imágenes del evento después de subir
+      axios.get(`/api/v1/bars/${id}/events`).then((response) => {
+        setEventPictures(response.data.events.flatMap(event => event.event_pictures || []));
+      });
     })
     .catch(error => {
-      console.error('Error checking in:', error);
+      console.error('Error al subir la(s) imagen(es):', error);
+      alert('Error al subir la(s) imagen(es)');
     });
   };
 
@@ -78,6 +82,29 @@ function Events() {
                       </ListItem>
                     ))}
                   </List>
+                  <Typography variant="body2">Subir una foto al evento:</Typography>
+                  <input ref={inputFiles} type="file" multiple onChange={handleFileChange} accept="image/*" />
+                  <Button variant="contained" color="secondary" onClick={() => handleUploadPhoto(event.id)}>
+                    Subir Foto(s)
+                  </Button>
+
+                  {/* Mostrar las vistas previas de las imágenes seleccionadas */}
+                  <Grid container spacing={2}>
+                    {imagePreviews.map((url, index) => (
+                      <Grid item xs={3} key={index}>
+                        <img src={url} alt={`Vista previa ${index}`} style={{ width: '100%', height: 'auto' }} />
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  {/* Mostrar imágenes subidas del evento en miniaturas */}
+                  <Grid container spacing={2}>
+                    {eventPictures.filter(pic => pic.event_id === event.id).map(picture => (
+                      <Grid item xs={3} key={picture.id}>
+                        <img src={picture.image_url} alt="Event Picture" style={{ width: '100%', height: 'auto' }} />
+                      </Grid>
+                    ))}
+                  </Grid>
                 </>
               }
             />
