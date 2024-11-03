@@ -2,12 +2,18 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSession } from '../hooks/useSession'; // Importa useSession
 
 export default function LoginForm() {
   const router = useRouter();
+  const { login } = useSession(); // Usa el hook para obtener la función de login
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const handleGoToSignUp = () => {
+    router.push('/signup');
+  };
 
   const handleLogin = async () => {
     try {
@@ -23,9 +29,10 @@ export default function LoginForm() {
         return;
       }
 
-      const data = await response.json();
-      // Aquí podrías guardar el token de sesión si es necesario
-      // y redirigir al usuario a la pantalla principal
+      // Llama a login() para cambiar el estado a autenticado
+      login();
+
+      // Redirige al usuario a la pantalla principal
       router.push('/home');
     } catch (err) {
       setError('Error de red o del servidor');
@@ -50,6 +57,8 @@ export default function LoginForm() {
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Button title="Log In" onPress={handleLogin} />
+      <View style={{ height: 10 }} />
+      <Button title="Create Account" onPress={handleGoToSignUp} />
     </View>
   );
 }

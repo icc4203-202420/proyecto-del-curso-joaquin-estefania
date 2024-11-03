@@ -4,18 +4,16 @@ import { View, StyleSheet } from 'react-native';
 import { Slot } from 'expo-router';
 import Navbar from '../components/Navbar';
 import { useRouter } from 'expo-router';
+import { AuthProvider, useSession } from '../hooks/useSession'; // Importa AuthProvider y useSession
 
-export default function AppLayout() {
+function AppContent() {
   const router = useRouter();
+  const { isAuthenticated, logout } = useSession(); // Usa el hook para obtener la sesión y la función de logout
 
-  // Aquí puedes agregar lógica para el manejo de navegación o autenticación en el futuro
-
-  // Ejemplo: Muestra la Navbar de forma condicional
-  const isAuthenticated = true; //Cambiar esto más adelante cuando integres Redux o autenticación
-
+  // Función para manejar el logout
   const handleLogout = () => {
-    // Lógica de logout que puedes implementar más adelante
-    router.push('/login');
+    logout(); // Cierra sesión
+    router.push('/login'); // Redirige a la pantalla de login
   };
 
   return (
@@ -25,6 +23,14 @@ export default function AppLayout() {
         <Slot />
       </View>
     </View>
+  );
+}
+
+export default function AppLayout() {
+  return (
+    <AuthProvider> {/* Envuelve AppContent en AuthProvider */}
+      <AppContent />
+    </AuthProvider>
   );
 }
 

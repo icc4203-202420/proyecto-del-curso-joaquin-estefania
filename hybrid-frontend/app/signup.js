@@ -36,6 +36,11 @@ export default function SignUpForm() {
     }
   };
 
+  // Maneja la navegación a la pantalla de login
+  const handleGoToLogin = () => {
+    router.push('/login');
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -72,6 +77,8 @@ export default function SignUpForm() {
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Button title="Sign Up" onPress={handleSignUp} />
+      <View style={{ height: 10 }} />
+      <Button title="Already have an account? Login" onPress={handleGoToLogin} />
     </View>
   );
 }
