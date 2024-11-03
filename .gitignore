@@ -145,3 +145,5 @@ backend/config/master.key
 backend/config/credentials/*.key
 
 backend/vendor/cache/*
+
+hybrid-frontend/store
