@@ -6,23 +6,20 @@ import { useRouter } from 'expo-router';
 export default function Home() {
   const router = useRouter();
 
+  // Función para manejar la navegación a la búsqueda de cervezas
+  const goToBeerSearch = () => {
+    router.push('/beer-search');
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bienvenido a la Cervecería</Text>
       <Text style={styles.subtitle}>Explora nuestras funcionalidades:</Text>
 
+      {/* Botón para navegar a la búsqueda de cervezas */}
       <Button
         title="Buscar Cervezas"
-        onPress={() => router.push('/search-beer')}
-      />
-      <Button
-        title="Evaluar Cervezas"
-        onPress={() => router.push('/review-beer')}
-        style={styles.button}
-      />
-      <Button
-        title="Ver Evaluaciones"
-        onPress={() => router.push('/beer-reviews')}
+        onPress={goToBeerSearch}
         style={styles.button}
       />
     </View>
