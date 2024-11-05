@@ -2,19 +2,23 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import ReviewForm from '../../components/ReviewForm';
+import axios from 'axios';
+import { useSession } from '../../hooks/useSession';
 
 export default function BeerDetails() {
   const { id } = useLocalSearchParams();
   const [beer, setBeer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { token, user } = useSession(); // Obtén el usuario y el token
 
+  // Función para obtener los detalles de la cerveza
   useEffect(() => {
     const fetchBeerDetails = async () => {
       try {
         const response = await fetch(`http://localhost:3001/api/v1/beers/${id}`);
         const data = await response.json();
-        console.log('Beer Data:', data); // Verifica los datos en la consola
-        setBeer(data.beer); // Ajusta aquí para acceder al objeto `beer`
+        setBeer(data.beer);
       } catch (error) {
         console.error('Error fetching beer details:', error);
       } finally {
@@ -26,6 +30,34 @@ export default function BeerDetails() {
       fetchBeerDetails();
     }
   }, [id]);
+
+  const onSubmitReview = async (review) => {
+    if (!token || !user?.id) {
+      console.error('Usuario no autenticado o ID de usuario no disponible');
+      return;
+    }
+    
+    try {
+      const response = await axios.post(
+        `http://localhost:3001/api/v1/beers/${id}/reviews`,
+        {
+          review: {
+            text: review.text,
+            rating: review.rating,
+            user_id: user.id, // Usa el ID del usuario
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Enviar el token en los encabezados
+          },
+        }
+      );
+      console.log('Review submitted:', response.data);
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    }
+  };
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -48,6 +80,9 @@ export default function BeerDetails() {
       <Text style={styles.detail}>
         Calificación promedio: {beer.avg_rating ? beer.avg_rating : 'No disponible'}
       </Text>
+
+      {/* Componente para escribir reseñas */}
+      <ReviewForm onSubmitReview={onSubmitReview} />
     </View>
   );
 }
