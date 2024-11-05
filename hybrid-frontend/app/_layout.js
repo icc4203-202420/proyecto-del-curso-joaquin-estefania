@@ -1,6 +1,6 @@
 // /app/_layout.js
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { Slot } from 'expo-router';
 import Navbar from '../components/Navbar';
 import { useRouter } from 'expo-router';
@@ -17,12 +17,12 @@ function AppContent() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {isAuthenticated && <Navbar onLogout={handleLogout} />}
       <View style={styles.content}>
         <Slot />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
