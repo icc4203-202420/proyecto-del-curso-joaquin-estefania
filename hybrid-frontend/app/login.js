@@ -3,22 +3,26 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSession } from '../hooks/useSession';
+import { Platform } from 'react-native';
+
+// Configuración dinámica de la URL del backend
+const API_URL = Platform.OS === 'web' ? 'http://localhost:3001' : 'https://70c8-190-196-43-15.ngrok-free.app';
 
 export default function LoginForm() {
   const router = useRouter();
-  const { login } = useSession();
+  const { login } = useSession(); // Hook personalizado para manejar la sesión
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/v1/login', {
+      const response = await fetch(`${API_URL}/api/v1/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user: { email, password } }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.error || 'Error al iniciar sesión');
@@ -27,11 +31,13 @@ export default function LoginForm() {
 
       const data = await response.json();
 
-      const user = data.status.data.user;
-      const token = data.status.data.token;
-  
+      // Asegúrate de que estas claves coincidan con la estructura de tu respuesta del backend
+      const user = data.user; // Ajusta según la clave exacta en tu respuesta JSON
+      const token = data.token; // Ajusta según la clave exacta en tu respuesta JSON
+
       console.log('User Data:', user);
-  
+
+      // Establece la sesión y redirige al usuario a la pantalla principal
       login(user, token);
       router.push('/home');
     } catch (err) {

@@ -14,7 +14,7 @@ export default function SignUpForm() {
 
   const handleSignUp = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/v1/signup', {
+      const response = await fetch('https://70c8-190-196-43-15.ngrok-free.app/api/v1/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
