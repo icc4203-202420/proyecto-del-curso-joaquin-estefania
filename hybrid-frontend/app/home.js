@@ -1,4 +1,3 @@
-// /app/home.js
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -11,6 +10,11 @@ export default function Home() {
     router.push('/beer-search');
   };
 
+  // Función para manejar la navegación a la búsqueda de usuarios
+  const goToUserSearch = () => {
+    router.push('/user-search'); // Asegúrate de crear la screen correspondiente
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bienvenido a la Cervecería</Text>
@@ -20,6 +24,13 @@ export default function Home() {
       <Button
         title="Buscar Cervezas"
         onPress={goToBeerSearch}
+        style={styles.button}
+      />
+
+      {/* Botón para navegar a la búsqueda de usuarios */}
+      <Button
+        title="Buscar Usuarios"
+        onPress={goToUserSearch}
         style={styles.button}
       />
     </View>
