@@ -1,19 +1,24 @@
-// /app/_layout.js
 import React from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { Slot } from 'expo-router';
 import Navbar from '../components/Navbar';
 import { useRouter } from 'expo-router';
-import { AuthProvider, useSession } from '../hooks/useSession'; // Importa AuthProvider y useSession
+import { AuthProvider, useSession } from '../hooks/useSession';
+import * as SecureStore from 'expo-secure-store';
 
 function AppContent() {
   const router = useRouter();
-  const { isAuthenticated, logout } = useSession(); // Usa el hook para obtener la sesión y la función de logout
+  const { isAuthenticated, logout } = useSession();
 
-  // Función para manejar el logout
-  const handleLogout = () => {
-    logout(); // Cierra sesión
-    router.push('/login'); // Redirige a la pantalla de login
+  const handleLogout = async () => {
+    try {
+      await SecureStore.deleteItemAsync('authToken'); // Elimina el token almacenado
+      console.log('Token eliminado de SecureStore');
+      logout(); // Cierra sesión en el contexto
+      router.push('/login'); // Redirige al login
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
   return (
@@ -28,7 +33,7 @@ function AppContent() {
 
 export default function AppLayout() {
   return (
-    <AuthProvider> {/* Envuelve AppContent en AuthProvider */}
+    <AuthProvider>
       <AppContent />
     </AuthProvider>
   );

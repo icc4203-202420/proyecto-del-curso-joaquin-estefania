@@ -1,4 +1,5 @@
-import { useContext, createContext, useState } from 'react';
+import { useContext, createContext, useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
 
 const AuthContext = createContext();
 
@@ -8,21 +9,57 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null); // Almacena la información del usuario
+  const [loading, setLoading] = useState(true); // Estado de carga para verificar la sesión al inicio
 
-  const login = (userData, userToken) => {
+  // Función para guardar el token en Secure Storage
+  const saveTokenToStorage = async (userToken) => {
+    await SecureStore.setItemAsync('auth_token', userToken);
+  };
+
+  // Función para eliminar el token de Secure Storage
+  const removeTokenFromStorage = async () => {
+    await SecureStore.deleteItemAsync('auth_token');
+  };
+
+  // Función para leer el token desde Secure Storage
+  const getTokenFromStorage = async () => {
+    return await SecureStore.getItemAsync('auth_token');
+  };
+
+  // Iniciar sesión: guarda el token en Secure Storage y actualiza el estado
+  const login = async (userData, userToken) => {
     setIsAuthenticated(true);
     setToken(userToken);
-    setUser(userData); // Establece el usuario
+    setUser(userData);
+    await saveTokenToStorage(userToken);
   };
 
-  const logout = () => {
+  // Cerrar sesión: elimina el token de Secure Storage y actualiza el estado
+  const logout = async () => {
     setIsAuthenticated(false);
     setToken(null);
-    setUser(null); // Limpia el usuario
+    setUser(null);
+    await removeTokenFromStorage();
   };
 
+  // Verificar el token al cargar la aplicación
+  useEffect(() => {
+    const checkSession = async () => {
+      const storedToken = await getTokenFromStorage();
+      if (storedToken) {
+        setIsAuthenticated(true);
+        setToken(storedToken);
+        // Aquí puedes hacer una solicitud al backend para obtener la información del usuario si es necesario
+      }
+      setLoading(false);
+    };
+
+    checkSession();
+  }, []);
+
+  // Proveer el contexto
   return (
-    <AuthContext.Provider value={{ isAuthenticated, token, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
