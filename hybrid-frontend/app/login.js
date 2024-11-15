@@ -4,9 +4,10 @@ import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSession } from '../hooks/useSession';
 import { Platform } from 'react-native';
+import { API_URL as CONFIG_API_URL } from '../constants/config'; // Importamos la URL global
 
-// Configuración dinámica de la URL del backend
-const API_URL = Platform.OS === 'web' ? 'http://localhost:3001' : 'https://70c8-190-196-43-15.ngrok-free.app';
+// Ajustar API_URL dependiendo del entorno
+const API_URL = Platform.OS === 'web' ? 'http://localhost:3001' : CONFIG_API_URL;
 
 export default function LoginForm() {
   const router = useRouter();

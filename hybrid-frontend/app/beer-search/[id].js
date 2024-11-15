@@ -1,25 +1,29 @@
 // /app/beer-details/[id].js
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import ReviewForm from '../../components/ReviewForm';
 import axios from 'axios';
 import { useSession } from '../../hooks/useSession';
+import { API_URL } from '../../constants/config';
 
 export default function BeerDetails() {
   const { id } = useLocalSearchParams();
   const [beer, setBeer] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { token, user } = useSession(); // Obtén el usuario y el token
+  const [submittingReview, setSubmittingReview] = useState(false); // Estado para el spinner de envío
+  const { token, user } = useSession();
 
   // Función para obtener los detalles de la cerveza
   useEffect(() => {
     const fetchBeerDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/v1/beers/${id}`);
+        const response = await fetch(`${API_URL}/api/v1/beers/${id}`);
+        if (!response.ok) throw new Error('Error al obtener los detalles de la cerveza');
         const data = await response.json();
         setBeer(data.beer);
       } catch (error) {
+        Alert.alert('Error', 'No se pudieron obtener los detalles de la cerveza');
         console.error('Error fetching beer details:', error);
       } finally {
         setLoading(false);
@@ -33,29 +37,40 @@ export default function BeerDetails() {
 
   const onSubmitReview = async (review) => {
     if (!token || !user?.id) {
+      Alert.alert('Error', 'Debe iniciar sesión para enviar una reseña');
       console.error('Usuario no autenticado o ID de usuario no disponible');
       return;
     }
-    
+
+    if (!review.text || !review.rating) {
+      Alert.alert('Error', 'Debe completar todos los campos para enviar la reseña');
+      return;
+    }
+
+    setSubmittingReview(true);
     try {
       const response = await axios.post(
-        `http://localhost:3001/api/v1/beers/${id}/reviews`,
+        `${API_URL}/api/v1/beers/${id}/reviews`,
         {
           review: {
             text: review.text,
             rating: review.rating,
-            user_id: user.id, // Usa el ID del usuario
+            user_id: user.id,
           },
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Enviar el token en los encabezados
+            Authorization: `Bearer ${token}`,
           },
         }
       );
+      Alert.alert('Éxito', 'Reseña enviada correctamente');
       console.log('Review submitted:', response.data);
     } catch (error) {
+      Alert.alert('Error', 'No se pudo enviar la reseña');
       console.error('Error submitting review:', error);
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -82,7 +97,7 @@ export default function BeerDetails() {
       </Text>
 
       {/* Componente para escribir reseñas */}
-      <ReviewForm onSubmitReview={onSubmitReview} />
+      <ReviewForm onSubmitReview={onSubmitReview} submitting={submittingReview} />
     </View>
   );
 }

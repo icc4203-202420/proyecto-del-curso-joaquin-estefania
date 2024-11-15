@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { API_URL } from '../constants/config';
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function SignUpForm() {
 
   const handleSignUp = async () => {
     try {
-      const response = await fetch('https://70c8-190-196-43-15.ngrok-free.app/api/v1/signup', {
+      const response = await fetch(`${API_URL}/api/v1/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -29,14 +30,12 @@ export default function SignUpForm() {
       }
 
       const data = await response.json();
-      // Redirigir al usuario a la pantalla de login o home
       router.push('/login');
     } catch (err) {
       setError('Error de red o del servidor');
     }
   };
 
-  // Maneja la navegación a la pantalla de login
   const handleGoToLogin = () => {
     router.push('/login');
   };

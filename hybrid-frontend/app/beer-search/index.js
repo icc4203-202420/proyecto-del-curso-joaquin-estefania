@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { API_URL } from '../../constants/config';
 
 export default function BeerSearch() {
   const [query, setQuery] = useState('');
@@ -12,7 +13,7 @@ export default function BeerSearch() {
   const handleSearch = async () => {
     try {
       // Realiza una solicitud al backend para buscar cervezas por nombre
-      const response = await fetch(`http://localhost:3001/api/v1/beers?search=${query}`);
+      const response = await fetch(`${API_URL}/api/v1/beers?search=${query}`);
       const data = await response.json();
       setBeers(data.beers); // Asigna las cervezas encontradas a tu estado
     } catch (error) {
