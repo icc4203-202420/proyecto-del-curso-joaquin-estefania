@@ -9,6 +9,7 @@ class User < ApplicationRecord
   validates :first_name, :last_name, presence: true, length: { minimum: 2 }
   validates :email, email: true
   validates :handle, presence: true, uniqueness: true, length: { minimum: 3 }
+  validates :push_token, uniqueness: true, allow_nil: true
 
   has_many :reviews
   has_many :beers, through: :reviews
@@ -31,5 +32,9 @@ class User < ApplicationRecord
 
   def generate_jwt
     Warden::JWTAuth::UserEncoder.new.call(self, :user, nil)[0]
+  end
+  # Método para actualizar el push_token del usuario
+  def save_push_token(token)
+    update(push_token: token)
   end
 end

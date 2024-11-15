@@ -1,3 +1,4 @@
+# app/controllers/api/v1/friendships_controller.rb
 module API
   module V1
     class FriendshipsController < ApplicationController
@@ -9,7 +10,6 @@ module API
 
       # POST /api/v1/friendships
       def create
-        # Buscar al amigo en base al friend_id enviado
         friend = User.find_by(id: friendship_params[:friend_id])
 
         if friend.nil?
@@ -17,25 +17,20 @@ module API
           return
         end
 
-        # Buscar el evento por ID o por nombre si se proporciona
         event_id = friendship_params[:event_id]
         if event_id.nil? && friendship_params[:event_name].present?
           event = Event.find_by(name: friendship_params[:event_name])
-
-          # Si no se encuentra el evento por nombre
           if event.nil?
             render json: { error: "Event not found" }, status: :not_found
             return
           end
-
-          # Asignar el ID del evento encontrado
           event_id = event.id
         end
 
-        # Crear la amistad con o sin event_id
         friendship = Friendship.new(user_id: @user.id, friend_id: friend.id, event_id: event_id)
 
         if friendship.save
+          send_push_notification(friend)
           render json: { message: 'Friendship created successfully' }, status: :created
         else
           render json: { error: friendship.errors.full_messages }, status: :unprocessable_entity
@@ -44,7 +39,17 @@ module API
 
       private
 
-      # Método para obtener el usuario actual
+      def send_push_notification(friend)
+        if friend.push_token.present?
+          PushNotificationService.send_notification(
+            to: friend.push_token,
+            title: "Nueva solicitud de amistad",
+            body: "#{@user.handle} te ha agregado como amigo.",
+            data: { targetScreen: '/home' }
+          )
+        end
+      end
+
       def set_user
         @user = current_user
         if @user.nil?

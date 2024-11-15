@@ -1,25 +1,25 @@
-import React from 'react';
+// app/_layout.js
+import React, { useEffect } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { Slot } from 'expo-router';
 import Navbar from '../components/Navbar';
 import { useRouter } from 'expo-router';
 import { AuthProvider, useSession } from '../hooks/useSession';
-import * as SecureStore from 'expo-secure-store';
+import { registerPushToken, setupNotificationListeners } from '../hooks/notifications';
 
 function AppContent() {
   const router = useRouter();
   const { isAuthenticated, logout } = useSession();
 
   const handleLogout = async () => {
-    try {
-      await SecureStore.deleteItemAsync('authToken'); // Elimina el token almacenado
-      console.log('Token eliminado de SecureStore');
-      logout(); // Cierra sesión en el contexto
-      router.push('/login'); // Redirige al login
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
+    logout();
+    router.push('/login');
   };
+
+  useEffect(() => {
+    registerPushToken();
+    return setupNotificationListeners(router);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
