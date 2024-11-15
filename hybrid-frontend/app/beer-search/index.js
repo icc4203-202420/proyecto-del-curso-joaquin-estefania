@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   TextInput,
-  Button,
   FlatList,
   Text,
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_URL } from '../../constants/config';
@@ -41,7 +41,6 @@ export default function BeerSearch() {
 
     setLoading(true); // Muestra el spinner
     try {
-      // Solicita todas las cervezas al backend
       const response = await fetch(`${API_URL}/api/v1/beers`, {
         method: 'GET',
         headers: {
@@ -86,18 +85,22 @@ export default function BeerSearch() {
         value={query}
         onChangeText={setQuery}
       />
-      <FlatList
-        data={filteredBeers} // Usar las cervezas filtradas
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => router.push(`/beer-search/${item.id}`)}>
-            <Text style={styles.beerItem}>{item.name}</Text>
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={
-          !loading && <Text style={styles.noResults}>No se encontraron cervezas.</Text>
-        }
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <FlatList
+          data={filteredBeers} // Usar las cervezas filtradas
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => router.push(`/beer-details/${item.id}`)}>
+              <Text style={styles.beerItem}>{item.name}</Text>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <Text style={styles.noResults}>No se encontraron cervezas.</Text>
+          }
+        />
+      )}
     </View>
   );
 }
