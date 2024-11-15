@@ -1,5 +1,4 @@
-// /app/beer-search/index.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -16,36 +15,38 @@ import * as SecureStore from 'expo-secure-store';
 
 export default function BeerSearch() {
   const [query, setQuery] = useState('');
-  const [beers, setBeers] = useState([]);
+  const [allBeers, setAllBeers] = useState([]); // Estado para todas las cervezas
+  const [filteredBeers, setFilteredBeers] = useState([]); // Estado para cervezas filtradas
+  const [loading, setLoading] = useState(false); // Estado para el spinner
   const router = useRouter();
 
-  // Función para obtener el token de Secure Storage
+  // Obtener token desde Secure Store
   const getToken = async () => {
     try {
-      const token = await SecureStore.getItemAsync('authToken');
-      return token;
+      return await SecureStore.getItemAsync('authToken');
     } catch (error) {
-      console.error('Error retrieving token from SecureStore:', error);
+      console.error('Error retrieving token:', error);
       return null;
     }
   };
 
-  // Función para manejar la búsqueda de cervezas
-  const handleSearch = async () => {
+  // Función para cargar todas las cervezas al iniciar
+  const fetchAllBeers = async () => {
     const token = await getToken();
 
     if (!token) {
-      Alert.alert('Error', 'No se encontró un token. Por favor, inicia sesión.');
+      Alert.alert('Error', 'Por favor, inicia sesión para cargar las cervezas.');
       return;
     }
 
+    setLoading(true); // Muestra el spinner
     try {
-      // Realiza una solicitud al backend para buscar cervezas
-      const response = await fetch(`${API_URL}/api/v1/beers?search=${query}`, {
+      // Solicita todas las cervezas al backend
+      const response = await fetch(`${API_URL}/api/v1/beers`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Incluye el token en el encabezado
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -54,12 +55,28 @@ export default function BeerSearch() {
       }
 
       const data = await response.json();
-      setBeers(data.beers || []); // Asigna las cervezas encontradas al estado
+      setAllBeers(data.beers || []); // Guarda todas las cervezas en el estado
+      setFilteredBeers(data.beers || []); // Inicialmente, las filtradas son todas
     } catch (error) {
-      console.error('Error searching for beers:', error);
-      Alert.alert('Error', 'No se pudo buscar cervezas. Por favor, intenta nuevamente.');
+      console.error('Error fetching beers:', error);
+      Alert.alert('Error', 'Hubo un problema al cargar las cervezas.');
+    } finally {
+      setLoading(false); // Oculta el spinner
     }
   };
+
+  // Actualiza las cervezas filtradas cuando el usuario escribe
+  useEffect(() => {
+    const results = allBeers.filter((beer) =>
+      beer.name.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredBeers(results);
+  }, [query, allBeers]);
+
+  // Cargar todas las cervezas al montar el componente
+  useEffect(() => {
+    fetchAllBeers();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -69,17 +86,17 @@ export default function BeerSearch() {
         value={query}
         onChangeText={setQuery}
       />
-      <Button title="Buscar" onPress={handleSearch} />
-
-      {/* Muestra los resultados de la búsqueda */}
       <FlatList
-        data={beers}
+        data={filteredBeers} // Usar las cervezas filtradas
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => router.push(`/beer-search/${item.id}`)}>
             <Text style={styles.beerItem}>{item.name}</Text>
           </TouchableOpacity>
         )}
+        ListEmptyComponent={
+          !loading && <Text style={styles.noResults}>No se encontraron cervezas.</Text>
+        }
       />
     </View>
   );
@@ -101,5 +118,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+  },
+  noResults: {
+    textAlign: 'center',
+    color: 'gray',
+    marginVertical: 20,
   },
 });

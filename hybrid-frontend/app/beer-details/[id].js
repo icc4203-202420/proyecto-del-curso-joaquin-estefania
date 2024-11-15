@@ -1,7 +1,7 @@
 // /app/beer-details/[id].js
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { View, Text, ActivityIndicator, StyleSheet, Alert, Button } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router'; // Importa useRouter
 import ReviewForm from '../../components/ReviewForm';
 import axios from 'axios';
 import { useSession } from '../../hooks/useSession';
@@ -9,6 +9,7 @@ import { API_URL } from '../../constants/config';
 
 export default function BeerDetails() {
   const { id } = useLocalSearchParams();
+  const router = useRouter(); // Inicializa router
   const [beer, setBeer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submittingReview, setSubmittingReview] = useState(false); // Estado para el spinner de envío
@@ -98,6 +99,12 @@ export default function BeerDetails() {
 
       {/* Componente para escribir reseñas */}
       <ReviewForm onSubmitReview={onSubmitReview} submitting={submittingReview} />
+      <Button
+        title="Ver Reseñas"
+        onPress={() => {
+          router.push(`/beer-search/reviews/${id}`); // Navega a las reseñas
+        }}
+      />
     </View>
   );
 }
