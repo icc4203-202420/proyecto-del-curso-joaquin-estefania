@@ -41,14 +41,17 @@ module API
 
       def send_push_notification(friend)
         if friend.push_token.present?
+          Rails.logger.info "Intentando enviar notificación a #{friend.push_token}"
           PushNotificationService.send_notification(
             to: friend.push_token,
             title: "Nueva solicitud de amistad",
             body: "#{@user.handle} te ha agregado como amigo.",
             data: { targetScreen: '/home' }
           )
+        else
+          Rails.logger.warn "El usuario #{friend.id} no tiene push_token"
         end
-      end
+      end      
 
       def set_user
         @user = current_user

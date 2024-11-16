@@ -24,7 +24,7 @@ Rails.application.routes.draw do
       end
 
       # Rutas para eventos
-      resources :events, only: [:show, :create, :update, :destroy] do
+      resources :events, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'attend'  # Ruta para hacer check-in en un evento
         end
