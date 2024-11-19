@@ -101,6 +101,60 @@ class API::V1::EventsController < ApplicationController
     end
   end
 
+  # POST /api/v1/events/:id/add_picture
+  def add_picture
+    event = Event.find_by(id: params[:id])
+
+    unless event
+      render json: { error: 'Event not found' }, status: :not_found
+      return
+    end
+
+    # Convertir tagged_handles a un array, incluso si es una cadena
+    tagged_handles = params[:tagged_handles]
+    tagged_handles = tagged_handles.is_a?(String) ? tagged_handles.split(',').map(&:strip) : tagged_handles
+
+    # Crear nueva foto para el evento
+    event_picture = EventPicture.new(
+      event: event,
+      user: current_user,
+      description: params[:description],
+      tagged_handles: tagged_handles
+    )
+
+    # Adjuntar la imagen
+    if params[:image].present?
+      event_picture.image.attach(params[:image])
+    end
+
+    if event_picture.save
+      # Notificar a los handles etiquetados
+      NotificationService.send_tagged_handles_notification(event_picture)
+
+      render json: { message: 'Picture added successfully.' }, status: :created
+    else
+      render json: { error: event_picture.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  # GET /api/v1/events/:id/pictures
+  def pictures
+    event = Event.find_by(id: params[:id])
+
+    unless event
+      render json: { error: 'Event not found' }, status: :not_found
+      return
+    end
+
+    pictures = event.event_pictures.includes(image_attachment: :blob)
+
+    render json: pictures.map { |picture| picture.as_json.merge(
+      image_url: url_for(picture.image),
+      user: picture.user.slice(:id, :first_name, :last_name),
+      tagged_handles: picture.tagged_handles
+    ) }, status: :ok
+  end
+
   private
 
   def set_event
@@ -117,8 +171,4 @@ class API::V1::EventsController < ApplicationController
     params.require(:event).permit(:name, :description, :date, :location, :image_base64)
   end
 
-  def handle_image_attachment
-    decoded_image = decode_image(event_params[:image_base64])
-    @event.image.attach(io: decoded_image[:io], filename: decoded_image[:filename], content_type: decoded_image[:content_type])
-  end
 end

@@ -4,6 +4,7 @@ class Event < ApplicationRecord
   has_many :attendees, through: :attendances, source: :user
 
   has_one_attached :flyer
+  has_many :event_pictures, dependent: :destroy
 
   def location
     bar.name

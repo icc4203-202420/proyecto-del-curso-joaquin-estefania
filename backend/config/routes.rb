@@ -25,7 +25,11 @@ Rails.application.routes.draw do
 
       # Rutas para eventos
       resources :events do
-        post 'attend', on: :member  # Ruta para hacer check-in en un evento
+        member do
+          post 'attend'
+          post 'add_picture'
+          get 'pictures'
+        end
       end
 
       # Rutas para cervezas
