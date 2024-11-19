@@ -25,8 +25,11 @@
       "favicon": "./assets/favicon.png"
     },
     "scheme": "hybridfrontend",
-    "plugins": [
-      "expo-secure-store"
-    ]
+    "plugins": ["expo-secure-store"],
+    "extra": {
+      "eas": {
+        "projectId": "90514276-ffa3-4640-af81-c7e60df764d1"
+      }
+    }
   }
 }

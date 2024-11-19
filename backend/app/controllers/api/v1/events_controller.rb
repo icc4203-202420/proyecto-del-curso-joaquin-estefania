@@ -17,30 +17,14 @@ class API::V1::EventsController < ApplicationController
     end
 
     attendance = Attendance.new(user_id: current_user.id, event_id: event.id)
-
+    
     if attendance.save
-      # Notificar a los amigos
-      notify_friends_about_attendance(current_user, event)
       render json: { message: 'Attendance recorded successfully.' }, status: :created
     else
       render json: { message: 'Error recording attendance.', errors: attendance.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # Método para enviar notificaciones push a los amigos
-  def notify_friends_about_attendance(user, event)
-    user.friends.each do |friend|
-      next unless friend.push_token.present? # Solo notificar si el amigo tiene un push_token
-
-      PushNotificationService.send_notification(
-        to: friend.push_token,
-        title: "#{user.first_name} asistirá al evento #{event.name}",
-        body: "El evento se realizará en #{event.location} el #{event.date.strftime('%d/%m/%Y')}.",
-        data: { targetScreen: '/events', eventId: event.id }
-      )
-    end
-  end
-  
   # GET /api/v1/bars/:bar_id/events
   def index
     events = @bar.events.includes(attendances: :user)  # Cargar attendances y usuarios asociados

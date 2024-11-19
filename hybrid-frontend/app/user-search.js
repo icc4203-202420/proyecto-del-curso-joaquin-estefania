@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, FlatList, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, TextInput, Button, FlatList, Text, StyleSheet, Alert } from 'react-native';
 import { API_URL } from '../constants/config';
 import * as SecureStore from 'expo-secure-store';
+import { registerPushToken, sendPushNotification } from '../utils/notifications'; // Importa las funciones
 
 export default function SearchUsers() {
   const [query, setQuery] = useState('');
@@ -49,6 +50,15 @@ export default function SearchUsers() {
       if (!response.ok) throw new Error('Error al agregar amigo.');
 
       const data = await response.json();
+
+      // Envía notificación al nuevo amigo
+      sendPushNotification({
+        to: data.friend_push_token, // Obtén el token de la respuesta del servidor
+        title: 'Nueva solicitud de amistad',
+        body: 'Un usuario te ha agregado como amigo.',
+        data: { targetScreen: '/home' },
+      });
+
       Alert.alert('Éxito', data.message || 'Amigo agregado.');
     } catch (error) {
       Alert.alert('Error', 'Hubo un problema al agregar amigo.');

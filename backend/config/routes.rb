@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   # Ruta para obtener el usuario actual
   get 'current_user', to: 'current_user#index'
 
-  # Rutas para Devise con controladores personalizados
+  # Rutas de Devise con controladores personalizados
   devise_for :users, path: '', path_names: {
     sign_in: 'api/v1/login',
     sign_out: 'api/v1/logout',
@@ -13,41 +13,43 @@ Rails.application.routes.draw do
   }
 
   # Ruta de estado de salud
-  get "up" => "rails/health#show", as: :rails_health_check
+  get 'up', to: 'rails/health#show', as: :rails_health_check
 
   # Namespace para la API versión 1
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
       # Rutas para bares y eventos anidados
-      resources :bars do
-        resources :events, only: [:index]  # Para obtener eventos de un bar específico
+      resources :bars, only: [:index, :show, :create, :update, :destroy] do
+        resources :events, only: [:index]  # Eventos de un bar específico
       end
 
       # Rutas para eventos
-      resources :events, only: [:index, :show, :create, :update, :destroy] do
-        member do
-          post 'attend'  # Ruta para hacer check-in en un evento
-        end
+      resources :events do
+        post 'attend', on: :member  # Ruta para hacer check-in en un evento
       end
 
       # Rutas para cervezas
       resources :beers do
-        resources :reviews, only: [:create, :index]  # Rutas anidadas para las reviews de cervezas
+        resources :reviews, only: [:index, :create]  # Reviews de cervezas
       end
 
-      # Rutas para usuarios, incluyendo búsqueda y reviews
-      resources :users do
-        resources :reviews, only: [:index]
+      # Rutas para usuarios
+      resources :users, only: [:index, :show, :create, :update, :destroy] do
         collection do
-          get 'search'  # Ruta para buscar usuarios
+          post 'push_token', action: :update_push_token  # Actualizar el push token
+          post 'notify_friendship'                       # Notificar solicitud de amistad
+          post 'notify_event'                            # Notificar evento
+          get 'search'                                   # Buscar usuarios por handle
         end
+
+        resources :reviews, only: [:index]  # Reviews asociadas a un usuario
       end
 
       # Rutas para amistades
-      resources :friendships, only: [:create]  # Ruta para crear amistades (POST a /friendships)
+      resources :friendships, only: [:create]  # Crear una amistad
 
-      # Rutas para las reviews de forma independiente
-      resources :reviews, only: [:index, :show, :create, :update, :destroy]
+      # Rutas para reviews de forma independiente
+      resources :reviews
     end
   end
 end

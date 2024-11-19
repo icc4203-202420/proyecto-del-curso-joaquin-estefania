@@ -16,6 +16,9 @@ module Backend
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w(assets tasks))
 
+    # Cargar automáticamente las clases en app/services
+    config.autoload_paths += %W(#{config.root}/app/services)
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
@@ -32,6 +35,6 @@ module Backend
     config.action_dispatch.default_headers = {
       'X-Frame-Options' => 'ALLOW-FROM http://localhost:3001',
       'Content-Security-Policy' => "frame-ancestors 'self' http://localhost:3001"
-    }    
+    }
   end
 end

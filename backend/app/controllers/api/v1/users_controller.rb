@@ -10,6 +10,18 @@ class API::V1::UsersController < ApplicationController
 
   end
 
+  def notify_friendship
+    friend = User.find(params[:friend_id])
+    NotificationService.send_friendship_notification(current_user, friend)
+    render json: { message: 'Notificación de amistad enviada.' }, status: :ok
+  end
+
+  def notify_event
+    event = Event.find(params[:event_id])
+    NotificationService.send_event_notification(current_user, event, current_user.friends)
+    render json: { message: 'Notificación del evento enviada.' }, status: :ok
+  end
+
   def search
     if params[:handle].present?
       # Convierte el campo 'handle' y el parámetro de búsqueda a minúsculas para que sea insensible a mayúsculas
@@ -35,6 +47,15 @@ class API::V1::UsersController < ApplicationController
       render :show, status: :ok, location: api_v1_users_path(@user)
     else
       render json: @user.errors, status: :unprocessable_entity
+    end
+  end
+  
+  def update_push_token
+    if params[:push_token].present?
+      current_user.update(push_token: params[:push_token])
+      render json: { message: 'Push token actualizado correctamente.' }, status: :ok
+    else
+      render json: { error: 'Push token no enviado.' }, status: :unprocessable_entity
     end
   end
 

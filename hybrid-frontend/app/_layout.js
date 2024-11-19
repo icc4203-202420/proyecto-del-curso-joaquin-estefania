@@ -5,7 +5,6 @@ import { Slot } from 'expo-router';
 import Navbar from '../components/Navbar';
 import { useRouter } from 'expo-router';
 import { AuthProvider, useSession } from '../hooks/useSession';
-import { registerPushToken, setupNotificationListeners } from '../hooks/notifications';
 
 function AppContent() {
   const router = useRouter();
@@ -15,11 +14,6 @@ function AppContent() {
     logout();
     router.push('/login');
   };
-
-  useEffect(() => {
-    registerPushToken();
-    return setupNotificationListeners(router);
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
