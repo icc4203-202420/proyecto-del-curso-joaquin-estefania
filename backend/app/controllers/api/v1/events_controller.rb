@@ -10,16 +10,30 @@ class API::V1::EventsController < ApplicationController
   # POST /api/v1/events/:id/attend
   def attend
     event = Event.find_by(id: params[:id])
-
+  
     if event.nil?
       render json: { message: 'Event not found.' }, status: :not_found
       return
     end
-
+  
+    # Verificar si el usuario ya está registrado en el evento
+    if Attendance.exists?(user_id: current_user.id, event_id: event.id)
+      render json: { message: 'You are already registered for this event.' }, status: :unprocessable_entity
+      return
+    end
+  
+    # Registrar asistencia
     attendance = Attendance.new(user_id: current_user.id, event_id: event.id)
-    
+  
     if attendance.save
-      render json: { message: 'Attendance recorded successfully.' }, status: :created
+      # Obtener los amigos del usuario
+      friends = User.joins(:friendships)
+                    .where(friendships: { user_id: current_user.id })
+  
+      # Llama al servicio de notificaciones
+      NotificationService.send_event_notification(current_user, event, friends)
+  
+      render json: { message: 'Attendance recorded successfully, and friends notified.' }, status: :created
     else
       render json: { message: 'Error recording attendance.', errors: attendance.errors.full_messages }, status: :unprocessable_entity
     end

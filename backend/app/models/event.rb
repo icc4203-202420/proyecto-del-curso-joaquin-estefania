@@ -5,6 +5,10 @@ class Event < ApplicationRecord
 
   has_one_attached :flyer
 
+  def location
+    bar.name
+  end
+
   def thumbnail
     flyer.variant(resize_to_limit: [200, nil]).processed
   end  

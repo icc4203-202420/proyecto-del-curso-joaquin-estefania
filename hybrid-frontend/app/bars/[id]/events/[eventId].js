@@ -48,19 +48,23 @@ const EventDetails = () => {
           'Content-Type': 'application/json',
         },
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Error al hacer check-in.');
       }
-
+  
       const data = await response.json();
-
-      Alert.alert('Éxito', 'Te has registrado en el evento. Se ha notificado a tus amigos.');
+  
+      Alert.alert(
+        'Éxito',
+        'Te has registrado en el evento y se ha notificado a tus amigos.'
+      );
     } catch (error) {
       Alert.alert('Error', error.message);
     }
   };
+  
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
@@ -87,7 +91,7 @@ const EventDetails = () => {
           {new Date(event.end_date).toLocaleDateString()}
         </Text>
       )}
-      <Text style={styles.detail}>Bar ID: {event.bar_id}</Text>
+      <Text style={styles.detail}>Bar: {event.bar?.name || 'Bar no especificado'}</Text>
 
       {/* Botón para hacer check-in */}
       <Button title="Asistir" onPress={handleCheckIn} color="#4CAF50" />
