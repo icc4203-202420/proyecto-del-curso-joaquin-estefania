@@ -16,19 +16,16 @@ class API::V1::EventsController < ApplicationController
       return
     end
   
-    # Verificar si el usuario ya está registrado en el evento
     if Attendance.exists?(user_id: current_user.id, event_id: event.id)
       render json: { message: 'You are already registered for this event.' }, status: :unprocessable_entity
       return
     end
   
-    # Registrar asistencia
     attendance = Attendance.new(user_id: current_user.id, event_id: event.id)
   
     if attendance.save
       # Obtener los amigos del usuario
-      friends = User.joins(:friendships)
-                    .where(friendships: { user_id: current_user.id })
+      friends = current_user.friends
   
       # Llama al servicio de notificaciones
       NotificationService.send_event_notification(current_user, event, friends)
@@ -37,7 +34,7 @@ class API::V1::EventsController < ApplicationController
     else
       render json: { message: 'Error recording attendance.', errors: attendance.errors.full_messages }, status: :unprocessable_entity
     end
-  end
+  end  
 
   # GET /api/v1/bars/:bar_id/events
   def index
