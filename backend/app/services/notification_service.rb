@@ -14,9 +14,10 @@ class NotificationService
   end
 
   def self.send_event_notification(user, event, friends)
+    Rails.logger.debug "Amigos del usuario #{user.id}: #{friends.map(&:id).join(', ')}"
     friends.each do |friend|
       next unless friend.push_token.present?
-
+  
       PushNotificationService.send_notification(
         to: friend.push_token,
         title: "#{user.first_name} asistirá al evento #{event.name}",
